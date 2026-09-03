@@ -106,12 +106,14 @@ export const platformActivity: PlatformActivity[] = [
 ];
 
 export const platformFirmGrowth = [
-  { month: "Apr", firms: 32, mrr: 24800 },
-  { month: "May", firms: 35, mrr: 27100 },
-  { month: "Jun", firms: 38, mrr: 29800 },
-  { month: "Jul", firms: 41, mrr: 32100 },
-  { month: "Aug", firms: 44, mrr: 35600 },
-  { month: "Sep", firms: 47, mrr: 38420 },
+  { month: "Jan", firms: 28, mrr: 42000, signups: 18 },
+  { month: "Feb", firms: 31, mrr: 48000, signups: 22 },
+  { month: "Mar", firms: 34, mrr: 52000, signups: 28 },
+  { month: "Apr", firms: 36, mrr: 48000, signups: 32 },
+  { month: "May", firms: 39, mrr: 58000, signups: 36 },
+  { month: "Jun", firms: 41, mrr: 65000, signups: 40 },
+  { month: "Jul", firms: 43, mrr: 72000, signups: 46 },
+  { month: "Aug", firms: 45, mrr: 82000, signups: 52 },
 ];
 
 export const platformPlanDistribution = [

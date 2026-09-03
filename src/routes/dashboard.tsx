@@ -12,6 +12,7 @@ import {
 import {
   ResponsiveContainer,
   ComposedChart,
+  Area,
   Bar,
   Line,
   PieChart,
@@ -21,7 +22,6 @@ import {
   XAxis,
   YAxis,
   CartesianGrid,
-  Legend,
 } from "recharts";
 import { AppShell, PageHeader } from "@/components/app-shell";
 import { KpiCard, Section, StatusBadge, toneForStatus } from "@/components/kit";
@@ -57,6 +57,43 @@ const kpiIcons: Record<string, React.ReactNode> = {
 };
 
 const kpiVariants = ["cyan", "green", "purple", "amber", "cyan"] as const;
+
+const growthLegend = [
+  { key: "mrr", label: "MRR (£)", color: "#3cadf1" },
+  { key: "firms", label: "Subscriber firms", color: "#50b546" },
+  { key: "signups", label: "New signups", color: "#e2008e" },
+] as const;
+
+function GrowthTooltip({
+  active,
+  payload,
+  label,
+}: {
+  active?: boolean;
+  payload?: Array<{ name: string; value: number; dataKey: string; color: string }>;
+  label?: string;
+}) {
+  if (!active || !payload?.length) return null;
+
+  return (
+    <div className="rounded-xl border border-border/60 bg-card px-3 py-2.5 shadow-lg">
+      <p className="mb-2 text-xs font-semibold text-muted-foreground">{label}</p>
+      <ul className="space-y-1.5">
+        {payload.map((entry) => (
+          <li key={entry.dataKey} className="flex items-center justify-between gap-6 text-sm">
+            <span className="flex items-center gap-2">
+              <span className="h-2 w-2 rounded-full" style={{ backgroundColor: entry.color }} />
+              {entry.name}
+            </span>
+            <span className="font-semibold tabular-nums">
+              {entry.dataKey === "mrr" ? `£${entry.value.toLocaleString()}` : entry.value}
+            </span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
 
 function PlatformDashboard() {
   const [timeRange, setTimeRange] = useState("This Month");
@@ -108,26 +145,90 @@ function PlatformDashboard() {
       <div className="mb-6 grid gap-5 lg:grid-cols-3">
         <Section
           title="Platform growth"
-          description="Subscriber firms and MRR over time"
+          description="MRR, subscriber firms and new signups over time"
           className="lg:col-span-2"
         >
-          <div className="h-72 p-4 sm:px-5">
+          <div className="h-80 p-4 sm:px-5">
             <ResponsiveContainer width="100%" height="100%">
-              <ComposedChart data={platformFirmGrowth}>
-                <CartesianGrid strokeDasharray="3 3" className="stroke-border/50" />
-                <XAxis dataKey="month" tick={{ fontSize: 12 }} />
-                <YAxis yAxisId="left" tick={{ fontSize: 12 }} />
-                <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 12 }} tickFormatter={(v) => `£${(v / 1000).toFixed(0)}k`} />
-                <Tooltip
-                  formatter={(value: number, name: string) =>
-                    name === "mrr" ? [`£${value.toLocaleString()}`, "MRR"] : [value, "Firms"]
-                  }
+              <ComposedChart data={platformFirmGrowth} margin={{ top: 8, right: 4, left: 0, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="mrrAreaFill" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#3cadf1" stopOpacity={0.35} />
+                    <stop offset="95%" stopColor="#3cadf1" stopOpacity={0.02} />
+                  </linearGradient>
+                  <linearGradient id="firmsBarFill" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#6fdb65" stopOpacity={0.95} />
+                    <stop offset="100%" stopColor="#50b546" stopOpacity={0.2} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="4 4" vertical={false} stroke="hsl(var(--border) / 0.55)" />
+                <XAxis
+                  dataKey="month"
+                  tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }}
+                  axisLine={false}
+                  tickLine={false}
+                  dy={8}
                 />
-                <Legend />
-                <Bar yAxisId="left" dataKey="firms" name="Subscriber firms" fill="#3cadf1" radius={[4, 4, 0, 0]} />
-                <Line yAxisId="right" type="monotone" dataKey="mrr" name="MRR (£)" stroke="#50b546" strokeWidth={2} dot={{ r: 4 }} />
+                <YAxis
+                  yAxisId="left"
+                  tick={{ fontSize: 11, fill: "#64748b" }}
+                  axisLine={false}
+                  tickLine={false}
+                  domain={[0, 100000]}
+                  ticks={[0, 25000, 50000, 75000, 100000]}
+                  tickFormatter={(v) => `£${v / 1000}k`}
+                  width={48}
+                />
+                <YAxis
+                  yAxisId="right"
+                  orientation="right"
+                  tick={{ fontSize: 11, fill: "#50b546" }}
+                  axisLine={false}
+                  tickLine={false}
+                  domain={[0, 100]}
+                  ticks={[0, 25, 50, 75, 100]}
+                  width={36}
+                />
+                <Tooltip content={<GrowthTooltip />} cursor={{ fill: "hsl(var(--muted) / 0.25)" }} />
+                <Area
+                  yAxisId="left"
+                  type="monotone"
+                  dataKey="mrr"
+                  name="MRR"
+                  stroke="#3cadf1"
+                  strokeWidth={2}
+                  fill="url(#mrrAreaFill)"
+                  dot={false}
+                  activeDot={{ r: 4, fill: "#3cadf1", stroke: "#fff", strokeWidth: 2 }}
+                />
+                <Bar
+                  yAxisId="right"
+                  dataKey="firms"
+                  name="Subscriber firms"
+                  fill="url(#firmsBarFill)"
+                  barSize={26}
+                  radius={[6, 6, 0, 0]}
+                />
+                <Line
+                  yAxisId="right"
+                  type="monotone"
+                  dataKey="signups"
+                  name="New signups"
+                  stroke="#e2008e"
+                  strokeWidth={2.5}
+                  dot={{ r: 5, fill: "#fff", stroke: "#e2008e", strokeWidth: 2 }}
+                  activeDot={{ r: 6, fill: "#e2008e", stroke: "#fff", strokeWidth: 2 }}
+                />
               </ComposedChart>
             </ResponsiveContainer>
+            <div className="mt-3 flex flex-wrap items-center justify-center gap-x-5 gap-y-2">
+              {growthLegend.map((item) => (
+                <span key={item.key} className="inline-flex items-center gap-2 text-xs font-medium text-muted-foreground">
+                  <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: item.color }} />
+                  {item.label}
+                </span>
+              ))}
+            </div>
           </div>
         </Section>
 

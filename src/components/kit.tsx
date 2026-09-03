@@ -285,8 +285,8 @@ export function Section({
     <section className={cn("card-soft overflow-hidden rounded-2xl border border-border/60 bg-card shadow-sm", className)}>
       <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 border-b border-border/50 bg-muted/25 px-4 py-4 sm:px-5">
         <div className="min-w-0">
-          <h2 className="truncate text-sm font-semibold">{title}</h2>
-          {description && <p className="truncate text-xs text-muted-foreground">{description}</p>}
+          <h2 className="truncate text-base font-semibold sm:text-lg">{title}</h2>
+          {description && <p className="truncate text-sm text-muted-foreground">{description}</p>}
         </div>
         {actions}
       </div>
