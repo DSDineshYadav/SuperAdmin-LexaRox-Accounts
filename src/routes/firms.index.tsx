@@ -2,7 +2,8 @@ import { useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Plus, Search, Building2, CheckCircle2, UserPlus, AlertTriangle } from "lucide-react";
 import { AppShell, PageHeader } from "@/components/app-shell";
-import { EmptyState, KpiCard, ListTableCard, ListTablePrimaryCell, StatusBadge, toneForStatus } from "@/components/kit";
+import { EmptyState, KpiCard, ListTableCard, ListTablePagination, ListTablePrimaryCell, StatusBadge, toneForStatus } from "@/components/kit";
+import { usePagination } from "@/hooks/use-pagination";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -54,6 +55,8 @@ function FirmsPage() {
       ),
     [query, status],
   );
+
+  const pagination = usePagination(rows, { resetKey: `${query}-${status}` });
 
   const toolbar = (
     <>
@@ -138,21 +141,22 @@ function FirmsPage() {
         {rows.length === 0 ? (
           <EmptyState title="No firms found" description="Try adjusting your search or filters." />
         ) : (
-          <Table>
-            <TableHeader>
-              <TableRow className="hover:bg-transparent">
-                <TableHead className="min-w-[14rem]">Firm</TableHead>
-                <TableHead className="min-w-[9rem]">Plan</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="hidden md:table-cell">Clients</TableHead>
-                <TableHead className="hidden lg:table-cell">Staff</TableHead>
-                <TableHead className="hidden lg:table-cell">MRR</TableHead>
-                <TableHead className="hidden sm:table-cell min-w-[7rem]">Last activity</TableHead>
-                <TableHead className="text-right w-[7rem]">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {rows.map((firm) => (
+          <>
+            <Table>
+              <TableHeader>
+                <TableRow className="hover:bg-transparent">
+                  <TableHead className="min-w-[14rem]">Firm</TableHead>
+                  <TableHead className="min-w-[9rem]">Plan</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead className="hidden md:table-cell">Clients</TableHead>
+                  <TableHead className="hidden lg:table-cell">Staff</TableHead>
+                  <TableHead className="hidden lg:table-cell">MRR</TableHead>
+                  <TableHead className="hidden sm:table-cell min-w-[7rem]">Last activity</TableHead>
+                  <TableHead className="text-right w-[7rem]">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {pagination.pageItems.map((firm) => (
                 <TableRow key={firm.id}>
                   <TableCell>
                     <ListTablePrimaryCell
@@ -188,9 +192,18 @@ function FirmsPage() {
                     </Button>
                   </TableCell>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+                ))}
+              </TableBody>
+            </Table>
+            <ListTablePagination
+              page={pagination.page}
+              totalPages={pagination.totalPages}
+              totalItems={pagination.totalItems}
+              rangeStart={pagination.rangeStart}
+              rangeEnd={pagination.rangeEnd}
+              onPageChange={pagination.setPage}
+            />
+          </>
         )}
       </ListTableCard>
     </AppShell>

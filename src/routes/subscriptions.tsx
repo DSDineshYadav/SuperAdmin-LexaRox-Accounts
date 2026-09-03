@@ -4,7 +4,8 @@ import { CreditCard, Building2, PoundSterling, TrendingUp, Plus, Download } from
 import { AppShell, PageHeader } from "@/components/app-shell";
 import { FormDialog } from "@/components/form-dialog";
 import { PlatformFormField } from "@/components/platform-form-field";
-import { KpiCard, ListTablePrimaryCell, Section, StatusBadge, toneForStatus } from "@/components/kit";
+import { KpiCard, ListTablePagination, ListTablePrimaryCell, Section, StatusBadge, toneForStatus } from "@/components/kit";
+import { usePagination } from "@/hooks/use-pagination";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -77,6 +78,9 @@ function SubscriptionManagementPage() {
     return sum + (isNaN(num) ? 0 : num);
   }, 0);
   const failedBilling = billing.filter((b) => b.status === "Failed" || b.status === "Overdue").length;
+
+  const plansPagination = usePagination(plans);
+  const billingPagination = usePagination(billing);
 
   const exportBilling = () => {
     downloadCsv(
@@ -195,7 +199,7 @@ function SubscriptionManagementPage() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {plans.map((plan) => (
+            {plansPagination.pageItems.map((plan) => (
               <TableRow key={plan.id}>
                 <TableCell><ListTablePrimaryCell title={plan.name} subtitle={plan.description} /></TableCell>
                 <TableCell className="font-medium tabular-nums">{plan.price}/{plan.billingPeriod === "Monthly" ? "mo" : "yr"}</TableCell>
@@ -209,6 +213,14 @@ function SubscriptionManagementPage() {
             ))}
           </TableBody>
         </Table>
+        <ListTablePagination
+          page={plansPagination.page}
+          totalPages={plansPagination.totalPages}
+          totalItems={plansPagination.totalItems}
+          rangeStart={plansPagination.rangeStart}
+          rangeEnd={plansPagination.rangeEnd}
+          onPageChange={plansPagination.setPage}
+        />
       </Section>
 
       <Section title="Recent billing" description="Cross-firm billing activity" className="mt-5">
@@ -225,7 +237,7 @@ function SubscriptionManagementPage() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {billing.map((record) => (
+            {billingPagination.pageItems.map((record) => (
               <TableRow key={record.id}>
                 <TableCell className="font-mono text-xs text-muted-foreground">{record.id}</TableCell>
                 <TableCell>
@@ -244,6 +256,14 @@ function SubscriptionManagementPage() {
             ))}
           </TableBody>
         </Table>
+        <ListTablePagination
+          page={billingPagination.page}
+          totalPages={billingPagination.totalPages}
+          totalItems={billingPagination.totalItems}
+          rangeStart={billingPagination.rangeStart}
+          rangeEnd={billingPagination.rangeEnd}
+          onPageChange={billingPagination.setPage}
+        />
       </Section>
 
       <FormDialog

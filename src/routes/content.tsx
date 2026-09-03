@@ -4,7 +4,8 @@ import { FileText, Plus, Search, Globe, Scale, Megaphone } from "lucide-react";
 import { AppShell, PageHeader } from "@/components/app-shell";
 import { FormDialog } from "@/components/form-dialog";
 import { PlatformFormField } from "@/components/platform-form-field";
-import { EmptyState, KpiCard, ListTableCard, ListTablePrimaryCell, StatusBadge, toneForStatus } from "@/components/kit";
+import { EmptyState, KpiCard, ListTableCard, ListTablePagination, ListTablePrimaryCell, StatusBadge, toneForStatus } from "@/components/kit";
+import { usePagination } from "@/hooks/use-pagination";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -73,6 +74,8 @@ function ContentManagementPage() {
       ),
     [pages, query, category],
   );
+
+  const pagination = usePagination(rows, { resetKey: `${query}-${category}` });
 
   const categoryIcon = (cat: string) => {
     switch (cat) {
@@ -177,19 +180,20 @@ function ContentManagementPage() {
         {rows.length === 0 ? (
           <EmptyState title="No pages found" description="Try adjusting your search or filters." />
         ) : (
-          <Table>
-            <TableHeader>
-              <TableRow className="hover:bg-transparent">
-                <TableHead className="min-w-[14rem]">Page</TableHead>
-                <TableHead>Slug</TableHead>
-                <TableHead>Category</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="hidden md:table-cell min-w-[11rem]">Last updated</TableHead>
-                <TableHead className="text-right w-[5.5rem]">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {rows.map((page) => {
+          <>
+            <Table>
+              <TableHeader>
+                <TableRow className="hover:bg-transparent">
+                  <TableHead className="min-w-[14rem]">Page</TableHead>
+                  <TableHead>Slug</TableHead>
+                  <TableHead>Category</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead className="hidden md:table-cell min-w-[11rem]">Last updated</TableHead>
+                  <TableHead className="text-right w-[5.5rem]">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {pagination.pageItems.map((page) => {
                 const Icon = categoryIcon(page.category);
                 return (
                   <TableRow key={page.id}>
@@ -213,9 +217,18 @@ function ContentManagementPage() {
                     </TableCell>
                   </TableRow>
                 );
-              })}
-            </TableBody>
-          </Table>
+                })}
+              </TableBody>
+            </Table>
+            <ListTablePagination
+              page={pagination.page}
+              totalPages={pagination.totalPages}
+              totalItems={pagination.totalItems}
+              rangeStart={pagination.rangeStart}
+              rangeEnd={pagination.rangeEnd}
+              onPageChange={pagination.setPage}
+            />
+          </>
         )}
       </ListTableCard>
 

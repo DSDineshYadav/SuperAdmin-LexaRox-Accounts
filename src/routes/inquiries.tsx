@@ -4,7 +4,8 @@ import { MessageSquare, Plus, Search, AlertCircle, Clock, CheckCircle2 } from "l
 import { AppShell, PageHeader } from "@/components/app-shell";
 import { FormDialog } from "@/components/form-dialog";
 import { PlatformFormField } from "@/components/platform-form-field";
-import { EmptyState, KpiCard, ListTableCard, ListTablePrimaryCell, PriorityBadge, Section, StatusBadge, toneForStatus } from "@/components/kit";
+import { EmptyState, KpiCard, ListTableCard, ListTablePagination, ListTablePrimaryCell, PriorityBadge, Section, StatusBadge, toneForStatus } from "@/components/kit";
+import { usePagination } from "@/hooks/use-pagination";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -91,6 +92,8 @@ function InquiryManagementPage() {
       ),
     [inquiries, query, type, status],
   );
+
+  const pagination = usePagination(rows, { resetKey: `${query}-${type}-${status}` });
 
   const updateInquiry = (id: string, patch: Partial<PlatformInquiry>) => {
     setInquiries((prev) => prev.map((i) => (i.id === id ? { ...i, ...patch } : i)));
@@ -183,21 +186,22 @@ function InquiryManagementPage() {
         {rows.length === 0 ? (
           <EmptyState title="No inquiries found" description="Try adjusting your search or filters." />
         ) : (
-          <Table>
-            <TableHeader>
-              <TableRow className="hover:bg-transparent">
-                <TableHead className="w-[7.5rem]">Reference</TableHead>
-                <TableHead className="min-w-[14rem]">Subject</TableHead>
-                <TableHead>Type</TableHead>
-                <TableHead>Priority</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="hidden md:table-cell min-w-[10rem]">Contact</TableHead>
-                <TableHead className="hidden lg:table-cell">Received</TableHead>
-                <TableHead className="text-right w-[5.5rem]">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {rows.map((inq) => (
+          <>
+            <Table>
+              <TableHeader>
+                <TableRow className="hover:bg-transparent">
+                  <TableHead className="w-[7.5rem]">Reference</TableHead>
+                  <TableHead className="min-w-[14rem]">Subject</TableHead>
+                  <TableHead>Type</TableHead>
+                  <TableHead>Priority</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead className="hidden md:table-cell min-w-[10rem]">Contact</TableHead>
+                  <TableHead className="hidden lg:table-cell">Received</TableHead>
+                  <TableHead className="text-right w-[5.5rem]">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {pagination.pageItems.map((inq) => (
                 <TableRow key={inq.id}>
                   <TableCell className="font-mono text-xs text-muted-foreground">{inq.id}</TableCell>
                   <TableCell><ListTablePrimaryCell title={inq.subject} subtitle={inq.firmName} /></TableCell>
@@ -210,9 +214,18 @@ function InquiryManagementPage() {
                     <Button variant="outline" size="sm" className="h-8 px-3" onClick={() => setSelected(inq)}>View</Button>
                   </TableCell>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+                ))}
+              </TableBody>
+            </Table>
+            <ListTablePagination
+              page={pagination.page}
+              totalPages={pagination.totalPages}
+              totalItems={pagination.totalItems}
+              rangeStart={pagination.rangeStart}
+              rangeEnd={pagination.rangeEnd}
+              onPageChange={pagination.setPage}
+            />
+          </>
         )}
       </ListTableCard>
 

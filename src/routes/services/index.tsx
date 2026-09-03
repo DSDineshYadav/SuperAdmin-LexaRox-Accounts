@@ -4,7 +4,8 @@ import { Briefcase, Search, Plus, ToggleLeft, CheckCircle2 } from "lucide-react"
 import { AppShell, PageHeader } from "@/components/app-shell";
 import { FormDialog } from "@/components/form-dialog";
 import { PlatformFormField } from "@/components/platform-form-field";
-import { EmptyState, KpiCard, ListTableCard, ListTablePrimaryCell, StatusBadge, toneForStatus } from "@/components/kit";
+import { EmptyState, KpiCard, ListTableCard, ListTablePagination, ListTablePrimaryCell, StatusBadge, toneForStatus } from "@/components/kit";
+import { usePagination } from "@/hooks/use-pagination";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -81,6 +82,8 @@ function ManageServicesPage() {
       ),
     [services, query, category, statusFilter],
   );
+
+  const pagination = usePagination(rows, { resetKey: `${query}-${category}-${statusFilter}` });
 
   const openCreate = () => {
     setEditingId(null);
@@ -192,21 +195,22 @@ function ManageServicesPage() {
         {rows.length === 0 ? (
           <EmptyState title="No services found" description="Try adjusting your search or filters." />
         ) : (
-          <Table>
-            <TableHeader>
-              <TableRow className="hover:bg-transparent">
-                <TableHead className="min-w-[14rem]">Service</TableHead>
-                <TableHead>Category</TableHead>
-                <TableHead>Default price</TableHead>
-                <TableHead>Client types</TableHead>
-                <TableHead>Firms enabled</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Available</TableHead>
-                <TableHead className="text-right w-[5.5rem]">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {rows.map((service) => (
+          <>
+            <Table>
+              <TableHeader>
+                <TableRow className="hover:bg-transparent">
+                  <TableHead className="min-w-[14rem]">Service</TableHead>
+                  <TableHead>Category</TableHead>
+                  <TableHead>Default price</TableHead>
+                  <TableHead>Client types</TableHead>
+                  <TableHead>Firms enabled</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Available</TableHead>
+                  <TableHead className="text-right w-[5.5rem]">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {pagination.pageItems.map((service) => (
                 <TableRow key={service.id}>
                   <TableCell><ListTablePrimaryCell title={service.name} subtitle={service.description} /></TableCell>
                   <TableCell className="text-muted-foreground">{service.category}</TableCell>
@@ -225,9 +229,18 @@ function ManageServicesPage() {
                     <Button variant="outline" size="sm" className="h-8 px-3" onClick={() => openEdit(service)}>Edit</Button>
                   </TableCell>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+                ))}
+              </TableBody>
+            </Table>
+            <ListTablePagination
+              page={pagination.page}
+              totalPages={pagination.totalPages}
+              totalItems={pagination.totalItems}
+              rangeStart={pagination.rangeStart}
+              rangeEnd={pagination.rangeEnd}
+              onPageChange={pagination.setPage}
+            />
+          </>
         )}
       </ListTableCard>
 

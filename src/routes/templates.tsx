@@ -4,7 +4,8 @@ import { Mail, FileSignature, Plus, Search } from "lucide-react";
 import { AppShell, PageHeader } from "@/components/app-shell";
 import { FormDialog } from "@/components/form-dialog";
 import { PlatformFormField } from "@/components/platform-form-field";
-import { EmptyState, KpiCard, ListTableCard, StatusBadge, toneForStatus } from "@/components/kit";
+import { EmptyState, KpiCard, ListTableCard, ListTablePagination, StatusBadge, toneForStatus } from "@/components/kit";
+import { usePagination } from "@/hooks/use-pagination";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -76,6 +77,8 @@ function TemplateManagementPage() {
       ),
     [templates, query, status, tab],
   );
+
+  const pagination = usePagination(rows, { resetKey: `${query}-${status}-${tab}` });
 
   const openCreate = () => {
     setEditingId(null);
@@ -177,20 +180,21 @@ function TemplateManagementPage() {
             {rows.length === 0 ? (
               <EmptyState title="No templates found" description="Try adjusting your search or filters." />
             ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow className="hover:bg-transparent">
-                    <TableHead className="min-w-[14rem]">Template</TableHead>
-                    <TableHead>Type</TableHead>
-                    <TableHead>Category</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead className="hidden md:table-cell">Firms using</TableHead>
-                    <TableHead className="hidden lg:table-cell">Last updated</TableHead>
-                    <TableHead className="text-right w-[5.5rem]">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {rows.map((template) => (
+              <>
+                <Table>
+                  <TableHeader>
+                    <TableRow className="hover:bg-transparent">
+                      <TableHead className="min-w-[14rem]">Template</TableHead>
+                      <TableHead>Type</TableHead>
+                      <TableHead>Category</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead className="hidden md:table-cell">Firms using</TableHead>
+                      <TableHead className="hidden lg:table-cell">Last updated</TableHead>
+                      <TableHead className="text-right w-[5.5rem]">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {pagination.pageItems.map((template) => (
                     <TableRow key={template.id}>
                       <TableCell className="font-semibold">{template.name}</TableCell>
                       <TableCell><StatusBadge tone={template.type === "Email" ? "info" : "primary"}>{template.type}</StatusBadge></TableCell>
@@ -202,9 +206,18 @@ function TemplateManagementPage() {
                         <Button variant="outline" size="sm" className="h-8 px-3" onClick={() => openEdit(template)}>Edit</Button>
                       </TableCell>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                    ))}
+                  </TableBody>
+                </Table>
+                <ListTablePagination
+                  page={pagination.page}
+                  totalPages={pagination.totalPages}
+                  totalItems={pagination.totalItems}
+                  rangeStart={pagination.rangeStart}
+                  rangeEnd={pagination.rangeEnd}
+                  onPageChange={pagination.setPage}
+                />
+              </>
             )}
           </ListTableCard>
         </TabsContent>

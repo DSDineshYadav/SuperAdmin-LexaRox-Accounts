@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
-import { Sparkles, TrendingDown, TrendingUp } from "lucide-react";
+import { ChevronLeft, ChevronRight, Sparkles, TrendingDown, TrendingUp } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 /* ---------------- Status badge ---------------- */
 
@@ -314,6 +315,61 @@ export function EmptyState({ title, description }: { title: string; description:
     <div className="flex flex-col items-center justify-center gap-1 px-6 py-14 text-center">
       <p className="text-sm font-medium">{title}</p>
       <p className="max-w-sm text-sm text-muted-foreground">{description}</p>
+    </div>
+  );
+}
+
+/* ---------------- List table pagination ---------------- */
+
+export function ListTablePagination({
+  page,
+  totalPages,
+  totalItems,
+  rangeStart,
+  rangeEnd,
+  onPageChange,
+}: {
+  page: number;
+  totalPages: number;
+  totalItems: number;
+  rangeStart: number;
+  rangeEnd: number;
+  onPageChange: (page: number) => void;
+}) {
+  if (totalPages <= 1) return null;
+
+  return (
+    <div className="flex flex-col gap-3 border-t border-border/50 bg-muted/20 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-5">
+      <p className="text-xs text-muted-foreground tabular-nums">
+        Showing {rangeStart}–{rangeEnd} of {totalItems}
+      </p>
+      <div className="flex items-center gap-2">
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          className="h-8 gap-1 px-2.5"
+          disabled={page <= 1}
+          onClick={() => onPageChange(page - 1)}
+        >
+          <ChevronLeft className="h-4 w-4" />
+          Previous
+        </Button>
+        <span className="min-w-[5.5rem] text-center text-xs font-medium tabular-nums text-muted-foreground">
+          Page {page} of {totalPages}
+        </span>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          className="h-8 gap-1 px-2.5"
+          disabled={page >= totalPages}
+          onClick={() => onPageChange(page + 1)}
+        >
+          Next
+          <ChevronRight className="h-4 w-4" />
+        </Button>
+      </div>
     </div>
   );
 }
