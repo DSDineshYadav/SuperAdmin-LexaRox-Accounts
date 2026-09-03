@@ -14,8 +14,10 @@ import { Route as AiReviewRouteImport } from './routes/ai-review'
 import { Route as AiWorkspaceRouteImport } from './routes/ai-workspace'
 import { Route as AmlRouteImport } from './routes/aml'
 import { Route as CommunicationsRouteImport } from './routes/communications'
+import { Route as ContentRouteImport } from './routes/content'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as HelpRouteImport } from './routes/help'
+import { Route as InquiriesRouteImport } from './routes/inquiries'
 import { Route as InsightsRouteImport } from './routes/insights'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
@@ -25,9 +27,13 @@ import { Route as ReportsRouteImport } from './routes/reports'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as StaffRouteImport } from './routes/staff'
 import { Route as SubscriptionsRouteImport } from './routes/subscriptions'
+import { Route as TemplatesRouteImport } from './routes/templates'
 import { Route as ClientsIndexRouteImport } from './routes/clients.index'
 import { Route as ClientsClientIdRouteImport } from './routes/clients.$clientId'
 import { Route as ClientsOnboardingRouteImport } from './routes/clients.onboarding'
+import { Route as FirmsIndexRouteImport } from './routes/firms.index'
+import { Route as FirmsFirmIdRouteImport } from './routes/firms.$firmId'
+import { Route as FirmsOnboardingRouteImport } from './routes/firms.onboarding'
 import { Route as ProposalsProposalIdRouteImport } from './routes/proposals.$proposalId'
 import { Route as ServicesIndexRouteImport } from './routes/services/index'
 import { Route as ServicesServiceIdRouteImport } from './routes/services/$serviceId'
@@ -64,6 +70,11 @@ const CommunicationsRoute = CommunicationsRouteImport.update({
   path: '/communications',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ContentRoute = ContentRouteImport.update({
+  id: '/content',
+  path: '/content',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DashboardRoute = DashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -72,6 +83,11 @@ const DashboardRoute = DashboardRouteImport.update({
 const HelpRoute = HelpRouteImport.update({
   id: '/help',
   path: '/help',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const InquiriesRoute = InquiriesRouteImport.update({
+  id: '/inquiries',
+  path: '/inquiries',
   getParentRoute: () => rootRouteImport,
 } as any)
 const InsightsRoute = InsightsRouteImport.update({
@@ -119,6 +135,11 @@ const SubscriptionsRoute = SubscriptionsRouteImport.update({
   path: '/subscriptions',
   getParentRoute: () => rootRouteImport,
 } as any)
+const TemplatesRoute = TemplatesRouteImport.update({
+  id: '/templates',
+  path: '/templates',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ClientsIndexRoute = ClientsIndexRouteImport.update({
   id: '/clients/',
   path: '/clients/',
@@ -132,6 +153,21 @@ const ClientsClientIdRoute = ClientsClientIdRouteImport.update({
 const ClientsOnboardingRoute = ClientsOnboardingRouteImport.update({
   id: '/clients/onboarding',
   path: '/clients/onboarding',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FirmsIndexRoute = FirmsIndexRouteImport.update({
+  id: '/firms/',
+  path: '/firms/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FirmsFirmIdRoute = FirmsFirmIdRouteImport.update({
+  id: '/firms/$firmId',
+  path: '/firms/$firmId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FirmsOnboardingRoute = FirmsOnboardingRouteImport.update({
+  id: '/firms/onboarding',
+  path: '/firms/onboarding',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ProposalsProposalIdRoute = ProposalsProposalIdRouteImport.update({
@@ -192,8 +228,10 @@ export interface FileRoutesByFullPath {
   '/ai-workspace': typeof AiWorkspaceRoute
   '/aml': typeof AmlRoute
   '/communications': typeof CommunicationsRoute
+  '/content': typeof ContentRoute
   '/dashboard': typeof DashboardRoute
   '/help': typeof HelpRoute
+  '/inquiries': typeof InquiriesRoute
   '/insights': typeof InsightsRoute
   '/login': typeof LoginRoute
   '/onboarding': typeof OnboardingRoute
@@ -203,8 +241,11 @@ export interface FileRoutesByFullPath {
   '/settings': typeof SettingsRoute
   '/staff': typeof StaffRouteWithChildren
   '/subscriptions': typeof SubscriptionsRoute
+  '/templates': typeof TemplatesRoute
   '/clients/$clientId': typeof ClientsClientIdRoute
   '/clients/onboarding': typeof ClientsOnboardingRoute
+  '/firms/$firmId': typeof FirmsFirmIdRoute
+  '/firms/onboarding': typeof FirmsOnboardingRoute
   '/proposals/$proposalId': typeof ProposalsProposalIdRoute
   '/services/$serviceId': typeof ServicesServiceIdRoute
   '/services/create': typeof ServicesCreateRoute
@@ -212,6 +253,7 @@ export interface FileRoutesByFullPath {
   '/tasks/$taskId': typeof TasksTaskIdRoute
   '/tasks/create': typeof TasksCreateRoute
   '/clients/': typeof ClientsIndexRoute
+  '/firms/': typeof FirmsIndexRoute
   '/services/': typeof ServicesIndexRoute
   '/tasks/': typeof TasksIndexRoute
   '/services/packages/$packageId': typeof ServicesPackagesPackageIdRoute
@@ -223,8 +265,10 @@ export interface FileRoutesByTo {
   '/ai-workspace': typeof AiWorkspaceRoute
   '/aml': typeof AmlRoute
   '/communications': typeof CommunicationsRoute
+  '/content': typeof ContentRoute
   '/dashboard': typeof DashboardRoute
   '/help': typeof HelpRoute
+  '/inquiries': typeof InquiriesRoute
   '/insights': typeof InsightsRoute
   '/login': typeof LoginRoute
   '/onboarding': typeof OnboardingRoute
@@ -234,8 +278,11 @@ export interface FileRoutesByTo {
   '/settings': typeof SettingsRoute
   '/staff': typeof StaffRouteWithChildren
   '/subscriptions': typeof SubscriptionsRoute
+  '/templates': typeof TemplatesRoute
   '/clients/$clientId': typeof ClientsClientIdRoute
   '/clients/onboarding': typeof ClientsOnboardingRoute
+  '/firms/$firmId': typeof FirmsFirmIdRoute
+  '/firms/onboarding': typeof FirmsOnboardingRoute
   '/proposals/$proposalId': typeof ProposalsProposalIdRoute
   '/services/$serviceId': typeof ServicesServiceIdRoute
   '/services/create': typeof ServicesCreateRoute
@@ -243,6 +290,7 @@ export interface FileRoutesByTo {
   '/tasks/$taskId': typeof TasksTaskIdRoute
   '/tasks/create': typeof TasksCreateRoute
   '/clients': typeof ClientsIndexRoute
+  '/firms': typeof FirmsIndexRoute
   '/services': typeof ServicesIndexRoute
   '/tasks': typeof TasksIndexRoute
   '/services/packages/$packageId': typeof ServicesPackagesPackageIdRoute
@@ -255,8 +303,10 @@ export interface FileRoutesById {
   '/ai-workspace': typeof AiWorkspaceRoute
   '/aml': typeof AmlRoute
   '/communications': typeof CommunicationsRoute
+  '/content': typeof ContentRoute
   '/dashboard': typeof DashboardRoute
   '/help': typeof HelpRoute
+  '/inquiries': typeof InquiriesRoute
   '/insights': typeof InsightsRoute
   '/login': typeof LoginRoute
   '/onboarding': typeof OnboardingRoute
@@ -266,8 +316,11 @@ export interface FileRoutesById {
   '/settings': typeof SettingsRoute
   '/staff': typeof StaffRouteWithChildren
   '/subscriptions': typeof SubscriptionsRoute
+  '/templates': typeof TemplatesRoute
   '/clients/$clientId': typeof ClientsClientIdRoute
   '/clients/onboarding': typeof ClientsOnboardingRoute
+  '/firms/$firmId': typeof FirmsFirmIdRoute
+  '/firms/onboarding': typeof FirmsOnboardingRoute
   '/proposals/$proposalId': typeof ProposalsProposalIdRoute
   '/services/$serviceId': typeof ServicesServiceIdRoute
   '/services/create': typeof ServicesCreateRoute
@@ -275,6 +328,7 @@ export interface FileRoutesById {
   '/tasks/$taskId': typeof TasksTaskIdRoute
   '/tasks/create': typeof TasksCreateRoute
   '/clients/': typeof ClientsIndexRoute
+  '/firms/': typeof FirmsIndexRoute
   '/services/': typeof ServicesIndexRoute
   '/tasks/': typeof TasksIndexRoute
   '/services/packages/$packageId': typeof ServicesPackagesPackageIdRoute
@@ -288,8 +342,10 @@ export interface FileRouteTypes {
     | '/ai-workspace'
     | '/aml'
     | '/communications'
+    | '/content'
     | '/dashboard'
     | '/help'
+    | '/inquiries'
     | '/insights'
     | '/login'
     | '/onboarding'
@@ -299,8 +355,11 @@ export interface FileRouteTypes {
     | '/settings'
     | '/staff'
     | '/subscriptions'
+    | '/templates'
     | '/clients/$clientId'
     | '/clients/onboarding'
+    | '/firms/$firmId'
+    | '/firms/onboarding'
     | '/proposals/$proposalId'
     | '/services/$serviceId'
     | '/services/create'
@@ -308,6 +367,7 @@ export interface FileRouteTypes {
     | '/tasks/$taskId'
     | '/tasks/create'
     | '/clients/'
+    | '/firms/'
     | '/services/'
     | '/tasks/'
     | '/services/packages/$packageId'
@@ -319,8 +379,10 @@ export interface FileRouteTypes {
     | '/ai-workspace'
     | '/aml'
     | '/communications'
+    | '/content'
     | '/dashboard'
     | '/help'
+    | '/inquiries'
     | '/insights'
     | '/login'
     | '/onboarding'
@@ -330,8 +392,11 @@ export interface FileRouteTypes {
     | '/settings'
     | '/staff'
     | '/subscriptions'
+    | '/templates'
     | '/clients/$clientId'
     | '/clients/onboarding'
+    | '/firms/$firmId'
+    | '/firms/onboarding'
     | '/proposals/$proposalId'
     | '/services/$serviceId'
     | '/services/create'
@@ -339,6 +404,7 @@ export interface FileRouteTypes {
     | '/tasks/$taskId'
     | '/tasks/create'
     | '/clients'
+    | '/firms'
     | '/services'
     | '/tasks'
     | '/services/packages/$packageId'
@@ -350,8 +416,10 @@ export interface FileRouteTypes {
     | '/ai-workspace'
     | '/aml'
     | '/communications'
+    | '/content'
     | '/dashboard'
     | '/help'
+    | '/inquiries'
     | '/insights'
     | '/login'
     | '/onboarding'
@@ -361,8 +429,11 @@ export interface FileRouteTypes {
     | '/settings'
     | '/staff'
     | '/subscriptions'
+    | '/templates'
     | '/clients/$clientId'
     | '/clients/onboarding'
+    | '/firms/$firmId'
+    | '/firms/onboarding'
     | '/proposals/$proposalId'
     | '/services/$serviceId'
     | '/services/create'
@@ -370,6 +441,7 @@ export interface FileRouteTypes {
     | '/tasks/$taskId'
     | '/tasks/create'
     | '/clients/'
+    | '/firms/'
     | '/services/'
     | '/tasks/'
     | '/services/packages/$packageId'
@@ -382,8 +454,10 @@ export interface RootRouteChildren {
   AiWorkspaceRoute: typeof AiWorkspaceRoute
   AmlRoute: typeof AmlRoute
   CommunicationsRoute: typeof CommunicationsRoute
+  ContentRoute: typeof ContentRoute
   DashboardRoute: typeof DashboardRoute
   HelpRoute: typeof HelpRoute
+  InquiriesRoute: typeof InquiriesRoute
   InsightsRoute: typeof InsightsRoute
   LoginRoute: typeof LoginRoute
   OnboardingRoute: typeof OnboardingRoute
@@ -393,13 +467,17 @@ export interface RootRouteChildren {
   SettingsRoute: typeof SettingsRoute
   StaffRoute: typeof StaffRouteWithChildren
   SubscriptionsRoute: typeof SubscriptionsRoute
+  TemplatesRoute: typeof TemplatesRoute
   ClientsClientIdRoute: typeof ClientsClientIdRoute
   ClientsOnboardingRoute: typeof ClientsOnboardingRoute
+  FirmsFirmIdRoute: typeof FirmsFirmIdRoute
+  FirmsOnboardingRoute: typeof FirmsOnboardingRoute
   ServicesServiceIdRoute: typeof ServicesServiceIdRoute
   ServicesCreateRoute: typeof ServicesCreateRoute
   TasksTaskIdRoute: typeof TasksTaskIdRoute
   TasksCreateRoute: typeof TasksCreateRoute
   ClientsIndexRoute: typeof ClientsIndexRoute
+  FirmsIndexRoute: typeof FirmsIndexRoute
   ServicesIndexRoute: typeof ServicesIndexRoute
   TasksIndexRoute: typeof TasksIndexRoute
   ServicesPackagesPackageIdRoute: typeof ServicesPackagesPackageIdRoute
@@ -443,6 +521,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CommunicationsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/content': {
+      id: '/content'
+      path: '/content'
+      fullPath: '/content'
+      preLoaderRoute: typeof ContentRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/dashboard': {
       id: '/dashboard'
       path: '/dashboard'
@@ -455,6 +540,13 @@ declare module '@tanstack/react-router' {
       path: '/help'
       fullPath: '/help'
       preLoaderRoute: typeof HelpRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/inquiries': {
+      id: '/inquiries'
+      path: '/inquiries'
+      fullPath: '/inquiries'
+      preLoaderRoute: typeof InquiriesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/insights': {
@@ -520,6 +612,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SubscriptionsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/templates': {
+      id: '/templates'
+      path: '/templates'
+      fullPath: '/templates'
+      preLoaderRoute: typeof TemplatesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/clients/': {
       id: '/clients/'
       path: '/clients'
@@ -539,6 +638,27 @@ declare module '@tanstack/react-router' {
       path: '/clients/onboarding'
       fullPath: '/clients/onboarding'
       preLoaderRoute: typeof ClientsOnboardingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/firms/': {
+      id: '/firms/'
+      path: '/firms'
+      fullPath: '/firms/'
+      preLoaderRoute: typeof FirmsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/firms/$firmId': {
+      id: '/firms/$firmId'
+      path: '/firms/$firmId'
+      fullPath: '/firms/$firmId'
+      preLoaderRoute: typeof FirmsFirmIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/firms/onboarding': {
+      id: '/firms/onboarding'
+      path: '/firms/onboarding'
+      fullPath: '/firms/onboarding'
+      preLoaderRoute: typeof FirmsOnboardingRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/proposals/$proposalId': {
@@ -642,8 +762,10 @@ const rootRouteChildren: RootRouteChildren = {
   AiWorkspaceRoute: AiWorkspaceRoute,
   AmlRoute: AmlRoute,
   CommunicationsRoute: CommunicationsRoute,
+  ContentRoute: ContentRoute,
   DashboardRoute: DashboardRoute,
   HelpRoute: HelpRoute,
+  InquiriesRoute: InquiriesRoute,
   InsightsRoute: InsightsRoute,
   LoginRoute: LoginRoute,
   OnboardingRoute: OnboardingRoute,
@@ -653,13 +775,17 @@ const rootRouteChildren: RootRouteChildren = {
   SettingsRoute: SettingsRoute,
   StaffRoute: StaffRouteWithChildren,
   SubscriptionsRoute: SubscriptionsRoute,
+  TemplatesRoute: TemplatesRoute,
   ClientsClientIdRoute: ClientsClientIdRoute,
   ClientsOnboardingRoute: ClientsOnboardingRoute,
+  FirmsFirmIdRoute: FirmsFirmIdRoute,
+  FirmsOnboardingRoute: FirmsOnboardingRoute,
   ServicesServiceIdRoute: ServicesServiceIdRoute,
   ServicesCreateRoute: ServicesCreateRoute,
   TasksTaskIdRoute: TasksTaskIdRoute,
   TasksCreateRoute: TasksCreateRoute,
   ClientsIndexRoute: ClientsIndexRoute,
+  FirmsIndexRoute: FirmsIndexRoute,
   ServicesIndexRoute: ServicesIndexRoute,
   TasksIndexRoute: TasksIndexRoute,
   ServicesPackagesPackageIdRoute: ServicesPackagesPackageIdRoute,

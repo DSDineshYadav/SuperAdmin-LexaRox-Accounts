@@ -8,19 +8,19 @@ import { cn } from "@/lib/utils";
 export const Route = createFileRoute("/login")({
   head: () => ({
     meta: [
-      { title: "Sign in — LexaRox Accounts" },
-      { name: "description", content: "Sign in to the LexaRox AI-first accountancy operations platform." },
-      { property: "og:title", content: "Sign in — LexaRox Accounts" },
-      { property: "og:description", content: "Secure access to your LexaRox accountancy workspace." },
+      { title: "Sign in — LexaRox Platform" },
+      { name: "description", content: "Sign in to the LexaRox platform administration console." },
+      { property: "og:title", content: "Sign in — LexaRox Platform" },
+      { property: "og:description", content: "Secure access to the LexaRox Super Admin workspace." },
     ],
   }),
   component: Login,
 });
 
 const stats = [
-  { value: "126", label: "AI actions today" },
-  { value: "18", label: "Awaiting review" },
-  { value: "1,284", label: "Active clients" },
+  { value: "47", label: "Subscriber firms" },
+  { value: "£38K", label: "Platform MRR" },
+  { value: "6,842", label: "End clients" },
 ] as const;
 
 function Login() {
@@ -61,17 +61,17 @@ function Login() {
             <div className="relative flex h-full min-h-0 flex-col justify-between p-10 xl:p-12">
               <span className="inline-flex w-fit items-center gap-2 rounded-full border border-white/25 bg-white/15 px-3.5 py-1.5 text-xs font-medium text-white backdrop-blur-md">
                 <Sparkles className="h-3.5 w-3.5" />
-                AI operations layer
+                Platform administration
               </span>
 
               <div>
                 <p className="max-w-[340px] text-[1.65rem] font-bold leading-[1.15] tracking-tight text-white xl:text-[1.85rem]">
-                  AI handles the work.
+                  Platform-wide control.
                   <br />
-                  You handle the decisions.
+                  Firms, billing &amp; content.
                 </p>
                 <p className="mt-4 max-w-[360px] text-sm leading-relaxed text-white/82 xl:text-[0.95rem]">
-                  Documents processed, exceptions detected, and onboarding guided — before your first coffee.
+                  Manage subscriber firms, subscription plans, global templates and platform configuration from one console.
                 </p>
               </div>
 
@@ -113,9 +113,9 @@ function Login() {
             />
 
             <div className="mt-7">
-              <h1 className="text-[1.35rem] font-bold tracking-tight text-foreground">Sign in to your workspace</h1>
+              <h1 className="text-[1.35rem] font-bold tracking-tight text-foreground">Sign in to LexaRox Platform</h1>
               <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
-                Welcome back. Your AI agents have been working overnight.
+                Super Admin access — manage firms, subscriptions and platform-wide configuration.
               </p>
             </div>
 
@@ -145,7 +145,7 @@ function Login() {
                     <input
                       id="email"
                       type="email"
-                      defaultValue="andrea@lexarox.com"
+                      defaultValue="sarah.chen@lexarox.com"
                       onFocus={() => setFocusedField("email")}
                       onBlur={() => setFocusedField((f) => (f === "email" ? null : f))}
                       className="min-w-0 flex-1 border-0 bg-transparent p-0 text-[0.95rem] outline-none ring-0 focus:outline-none focus:ring-0"

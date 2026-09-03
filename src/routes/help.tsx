@@ -26,17 +26,16 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { firmProfile } from "@/lib/data";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/help")({
   head: () => ({
     meta: [
-      { title: "Help & Support — LexaRox Accounts" },
+      { title: "Help & Support — LexaRox Platform" },
       {
         name: "description",
-        content: "Help centre, documentation and support for LexaRox Accounts.",
+        content: "Help centre and support for LexaRox platform administrators.",
       },
     ],
   }),
@@ -45,57 +44,57 @@ export const Route = createFileRoute("/help")({
 
 const guides = [
   {
-    id: "onboarding",
-    title: "Client onboarding",
-    description: "Start a new client workflow, track progress and use the AI assistant for document chases.",
-    href: "/clients/onboarding",
+    id: "firms",
+    title: "Firm management",
+    description: "Onboard subscriber firms, configure plans and monitor firm health across the platform.",
+    href: "/firms",
     icon: Users,
-    tag: "Getting started",
+    tag: "Platform",
   },
   {
-    id: "clients",
-    title: "Manage clients",
-    description: "Search clients, open profiles, review AML, documents and communications in one place.",
-    href: "/clients",
+    id: "subscriptions",
+    title: "Subscription management",
+    description: "Manage platform plans, billing tiers and cross-firm subscription records.",
+    href: "/subscriptions",
     icon: Users,
-    tag: "Operations",
+    tag: "Billing",
   },
   {
-    id: "tasks",
-    title: "Task management",
-    description: "Create tasks, assign work to your team and monitor overdue items across the practice.",
-    href: "/tasks",
+    id: "services",
+    title: "Platform service catalogue",
+    description: "Configure services available for firms to offer their end clients.",
+    href: "/services",
     icon: ListChecks,
-    tag: "Operations",
+    tag: "Catalogue",
   },
   {
-    id: "communications",
-    title: "AI-assisted communication",
-    description: "Review AI-drafted emails and messages before sending to clients.",
-    href: "/communications",
+    id: "templates",
+    title: "Template management",
+    description: "Maintain global email and proposal templates for all subscriber firms.",
+    href: "/templates",
     icon: MessageCircle,
-    tag: "Intelligence",
+    tag: "Catalogue",
   },
   {
-    id: "oversight",
-    title: "Oversight & review queue",
-    description: "Approve AI actions, monitor exceptions and keep a clear audit trail.",
-    href: "/oversight",
+    id: "inquiries",
+    title: "Inquiry management",
+    description: "Handle sales, support and partnership inquiries from the platform.",
+    href: "/inquiries",
     icon: ShieldCheck,
-    tag: "Intelligence",
+    tag: "Platform",
   },
   {
-    id: "documents",
-    title: "Client documents",
-    description: "Upload and categorise documents from each client's Documents tab in Manage Clients.",
-    href: "/clients",
+    id: "content",
+    title: "Static content",
+    description: "Manage terms, help pages and marketing content across the platform.",
+    href: "/content",
     icon: FileText,
-    tag: "Compliance",
+    tag: "Content",
   },
   {
     id: "settings",
-    title: "Firm settings & privacy",
-    description: "Update firm profile, AI agent policies, languages and GDPR controls.",
+    title: "System administration",
+    description: "Roles, departments, onboarding config, integrations and audit logs.",
     href: "/settings",
     icon: Settings,
     tag: "Administration",
@@ -103,7 +102,7 @@ const guides = [
   {
     id: "ai-assistant",
     title: "LexaRox Assistant",
-    description: "Ask about overdue tasks, onboarding status, document chases and quick drafts.",
+    description: "Ask about firm status, open inquiries, MRR and platform activity.",
     href: null,
     icon: Sparkles,
     tag: "Intelligence",
@@ -113,39 +112,39 @@ const guides = [
 const faqs = [
   {
     id: "faq-1",
-    question: "How do I onboard a new client?",
+    question: "How do I onboard a new subscriber firm?",
     answer:
-      "Go to Manage Clients and use Client Onboarding, or open an existing onboarding record from a client profile. Complete the required information steps, upload documents and let the AI assistant guide document collection. Progress is tracked on the client overview tab.",
+      "Open Firm Management and click Onboard firm. Complete firm details, select a subscription plan, choose catalogue services the firm will offer to clients, then activate. The firm starts in Onboarding status until setup is complete.",
   },
   {
     id: "faq-2",
-    question: "Where are client documents stored?",
+    question: "How do I configure which services a firm offers?",
     answer:
-      "Documents are managed per client. Open Manage Clients, select a client and open the Documents tab to upload, filter by category and review AI categorisation. Documents follow your firm's retention policy configured under Settings → Data & Privacy.",
+      "Open Firm Management, select the firm and go to the Configuration tab. Enable or disable services from the platform catalogue and assign global templates. You can also manage the master catalogue from Manage Services.",
   },
   {
     id: "faq-3",
-    question: "How does AI review work?",
+    question: "How do I manage subscription plans and billing?",
     answer:
-      "AI agents process documents, draft communications and flag exceptions. Items requiring human approval appear in Oversight and AI-Assisted Communication. Your team reviews, edits and approves before anything is sent or finalised.",
+      "Subscription Management shows all platform plans, firm subscription counts and cross-firm billing records. You can create plans, edit tiers and review failed or overdue payments from subscriber firms.",
   },
   {
     id: "faq-4",
-    question: "How do I create and assign a task?",
+    question: "How do I handle sales and support inquiries?",
     answer:
-      "Open Task Management and click Add Task. Select client type(s) if needed, choose a single client, set the deadline and assignee, then add a task breakdown. Tasks can also be created automatically by AI workflows.",
+      "Inquiry Management lists all inbound platform inquiries. Filter by type (Sales, Support, Partnership), open an inquiry to view details, assign it and mark as resolved when complete.",
   },
   {
     id: "faq-5",
-    question: "Can clients complete onboarding in other languages?",
+    question: "Where do I manage static content and templates?",
     answer:
-      "Yes. Multilingual onboarding is supported. Enable languages under Settings → Languages. The onboarding assistant adapts instructions and chases based on the client's preferred language.",
+      "Static Content Management covers terms, help pages and marketing content. Template Management maintains global email and proposal templates available to all subscriber firms.",
   },
   {
     id: "faq-6",
-    question: "Who can I contact for technical support?",
+    question: "Who can I contact for platform support?",
     answer:
-      "Use the contact options on this page, email support@lexarox.com or open the LexaRox Assistant from the header Ask AI button. Priority support is available Mon–Fri, 9:00–17:30 UK time.",
+      "Email platform@lexarox.com or use the LexaRox Assistant from the header. For subscriber firm issues, use Inquiry Management or view the firm's detail page in Firm Management.",
   },
 ] as const;
 
@@ -178,7 +177,7 @@ function HelpSupportPage() {
     <AppShell>
       <PageHeader
         title="Help & Support"
-        subtitle="Documentation, guides and contact options for your team."
+        subtitle="Documentation, guides and contact options for platform administrators."
         actions={
           <AskAiButton className="gap-1.5 bg-[#3cadf1] font-semibold text-white hover:bg-[#3cadf1]/90">
             <Sparkles className="h-4 w-4" />
@@ -193,7 +192,7 @@ function HelpSupportPage() {
           value="8"
           trend="Updated"
           up={true}
-          support="Onboarding, tasks, AI & compliance"
+          support="Firms, billing, templates & admin"
           icon={<BookOpen className="h-5 w-5" />}
           variant="cyan"
         />
@@ -336,7 +335,7 @@ function HelpSupportPage() {
                 <Phone className="mt-0.5 h-4 w-4 shrink-0 text-[#3cadf1]" />
                 <div>
                   <p className="text-sm font-semibold">Phone</p>
-                  <p className="mt-0.5 text-xs text-muted-foreground">{firmProfile.phone}</p>
+                  <p className="mt-0.5 text-xs text-muted-foreground">platform@lexarox.com</p>
                   <p className="mt-1 text-[10px] text-muted-foreground">Mon–Fri · 9:00–17:30 GMT</p>
                 </div>
               </div>

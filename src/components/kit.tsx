@@ -30,7 +30,7 @@ export function StatusBadge({
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border px-2.5 py-0.5 text-xs font-medium",
+        "inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border px-3 py-1 text-xs font-medium",
         tones[tone],
         className,
       )}
@@ -79,8 +79,13 @@ export function toneForStatus(status: string): Tone {
   }
 }
 
-export function PriorityBadge({ priority }: { priority: "High" | "Medium" | "Low" }) {
-  const tone: Tone = priority === "High" ? "danger" : priority === "Medium" ? "warning" : "neutral";
+export function PriorityBadge({ priority }: { priority: "Urgent" | "High" | "Medium" | "Low" }) {
+  const tone: Tone =
+    priority === "Urgent" || priority === "High"
+      ? "danger"
+      : priority === "Medium"
+        ? "warning"
+        : "neutral";
   return (
     <StatusBadge tone={tone} dot>
       {priority}
@@ -215,6 +220,51 @@ export function AiInsight({
   );
 }
 
+/* ---------------- List table shell ---------------- */
+
+export function ListTableCard({
+  toolbar,
+  children,
+  className,
+}: {
+  toolbar?: ReactNode;
+  children: ReactNode;
+  className?: string;
+}) {
+  return (
+    <div
+      className={cn(
+        "card-soft overflow-hidden rounded-2xl border border-border/60 bg-card shadow-sm",
+        className,
+      )}
+    >
+      {toolbar && (
+        <div className="grid gap-3 border-b border-border/50 bg-muted/25 p-4 sm:flex sm:items-center sm:px-5 sm:py-4">
+          {toolbar}
+        </div>
+      )}
+      {children}
+    </div>
+  );
+}
+
+export function ListTablePrimaryCell({
+  title,
+  subtitle,
+}: {
+  title: ReactNode;
+  subtitle?: ReactNode;
+}) {
+  return (
+    <div className="flex min-w-[12rem] max-w-md flex-col gap-1 py-0.5">
+      <div className="text-sm font-semibold leading-snug text-foreground">{title}</div>
+      {subtitle != null && subtitle !== "" && (
+        <div className="text-xs leading-relaxed text-muted-foreground">{subtitle}</div>
+      )}
+    </div>
+  );
+}
+
 /* ---------------- Section ---------------- */
 
 export function Section({
@@ -231,8 +281,8 @@ export function Section({
   className?: string;
 }) {
   return (
-    <section className={cn("card-soft overflow-hidden", className)}>
-      <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 border-b px-4 py-3 sm:px-5">
+    <section className={cn("card-soft overflow-hidden rounded-2xl border border-border/60 bg-card shadow-sm", className)}>
+      <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 border-b border-border/50 bg-muted/25 px-4 py-4 sm:px-5">
         <div className="min-w-0">
           <h2 className="truncate text-sm font-semibold">{title}</h2>
           {description && <p className="truncate text-xs text-muted-foreground">{description}</p>}

@@ -1,239 +1,335 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { CreditCard, Users, Sparkles, Building2, Download, RefreshCw } from "lucide-react";
+import { useState } from "react";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { CreditCard, Building2, PoundSterling, TrendingUp, Plus, Download } from "lucide-react";
 import { AppShell, PageHeader } from "@/components/app-shell";
-import { KpiCard, ProgressBar, Section, StatusBadge } from "@/components/kit";
+import { FormDialog } from "@/components/form-dialog";
+import { PlatformFormField } from "@/components/platform-form-field";
+import { KpiCard, ListTablePrimaryCell, Section, StatusBadge, toneForStatus } from "@/components/kit";
 import { Button } from "@/components/ui/button";
-import { firmSubscription, subscriptionInvoices } from "@/lib/data";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  platformSubscriptionPlans,
+  firmBillingRecords,
+  subscriberFirms,
+  type PlatformSubscriptionPlan,
+  type FirmBillingRecord,
+} from "@/lib/platform-data";
+import { downloadCsv } from "@/lib/export-csv";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/subscriptions")({
   head: () => ({
     meta: [
-      { title: "Subscription Management — LexaRox Accounts" },
-      {
-        name: "description",
-        content: "Manage your firm's subscription and billing with LexaRox — plan, usage and invoices.",
-      },
+      { title: "Subscription Management — LexaRox Platform" },
+      { name: "description", content: "Manage platform subscription plans and billing across all subscriber firms." },
     ],
   }),
   component: SubscriptionManagementPage,
 });
 
+type PlanForm = {
+  name: string;
+  price: string;
+  billingPeriod: PlatformSubscriptionPlan["billingPeriod"];
+  clients: string;
+  seats: string;
+  description: string;
+  status: PlatformSubscriptionPlan["status"];
+};
+
+const emptyPlanForm: PlanForm = {
+  name: "",
+  price: "£99",
+  billingPeriod: "Monthly",
+  clients: "100",
+  seats: "3",
+  description: "",
+  status: "Active",
+};
+
 function SubscriptionManagementPage() {
-  const sub = firmSubscription;
-  const seatUsage = Math.round((sub.seatsUsed / sub.seats) * 100);
-  const clientUsage = Math.round((sub.clientsUsed / sub.clientsLimit) * 100);
-  const aiUsage = Math.round((sub.aiActionsUsed / sub.aiActionsLimit) * 100);
+  const [plans, setPlans] = useState(platformSubscriptionPlans);
+  const [billing] = useState(firmBillingRecords);
+  const [planDialogOpen, setPlanDialogOpen] = useState(false);
+  const [invoiceDialogOpen, setInvoiceDialogOpen] = useState(false);
+  const [editingPlanId, setEditingPlanId] = useState<string | null>(null);
+  const [selectedInvoice, setSelectedInvoice] = useState<FirmBillingRecord | null>(null);
+  const [planForm, setPlanForm] = useState<PlanForm>(emptyPlanForm);
+
+  const totalMrr = subscriberFirms.reduce((sum, f) => {
+    const num = parseInt(f.mrr.replace(/[^\d]/g, ""), 10);
+    return sum + (isNaN(num) ? 0 : num);
+  }, 0);
+  const failedBilling = billing.filter((b) => b.status === "Failed" || b.status === "Overdue").length;
+
+  const exportBilling = () => {
+    downloadCsv(
+      "lexarox-platform-billing.csv",
+      ["Invoice", "Firm", "Plan", "Amount", "Period", "Status", "Date"],
+      billing.map((r) => [r.id, r.firmName, r.plan, r.amount, r.period, r.status, r.date]),
+    );
+    toast.success("Billing export downloaded");
+  };
+
+  const openCreatePlan = () => {
+    setEditingPlanId(null);
+    setPlanForm(emptyPlanForm);
+    setPlanDialogOpen(true);
+  };
+
+  const openEditPlan = (plan: PlatformSubscriptionPlan) => {
+    setEditingPlanId(plan.id);
+    setPlanForm({
+      name: plan.name,
+      price: plan.price,
+      billingPeriod: plan.billingPeriod,
+      clients: String(plan.clients),
+      seats: String(plan.seats),
+      description: plan.description,
+      status: plan.status,
+    });
+    setPlanDialogOpen(true);
+  };
+
+  const savePlan = (): boolean => {
+    if (!planForm.name.trim()) {
+      toast.error("Plan name is required");
+      return false;
+    }
+    const clients = parseInt(planForm.clients, 10) || 100;
+    const seats = parseInt(planForm.seats, 10) || 3;
+    if (editingPlanId) {
+      setPlans((prev) =>
+        prev.map((p) =>
+          p.id === editingPlanId
+            ? {
+                ...p,
+                name: planForm.name.trim(),
+                price: planForm.price.trim(),
+                billingPeriod: planForm.billingPeriod,
+                clients,
+                seats,
+                description: planForm.description.trim() || p.description,
+                status: planForm.status,
+              }
+            : p,
+        ),
+      );
+      toast.success("Plan updated");
+    } else {
+      setPlans((prev) => [
+        {
+          id: `plan-${Date.now()}`,
+          name: planForm.name.trim(),
+          price: planForm.price.trim(),
+          billingPeriod: planForm.billingPeriod,
+          clients,
+          seats,
+          description: planForm.description.trim() || "New subscription tier.",
+          firmsSubscribed: 0,
+          status: planForm.status,
+          features: ["Custom features"],
+        },
+        ...prev,
+      ]);
+      toast.success("Plan created");
+    }
+    return true;
+  };
+
+  const openInvoice = (record: FirmBillingRecord) => {
+    setSelectedInvoice(record);
+    setInvoiceDialogOpen(true);
+  };
 
   return (
     <AppShell>
       <PageHeader
-        title="Subscription & Billing"
-        subtitle="Your firm's LexaRox subscription — plan, billing cycle, payment information and invoices."
+        title="Subscription Management"
+        subtitle="Manage platform subscription plans and billing across all subscriber firms."
         actions={
-          <Button variant="outline" onClick={() => toast("Billing portal opened")}>
-            <RefreshCw className="h-4 w-4" /> Manage billing
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            <Button variant="outline" onClick={exportBilling}>
+              <Download className="h-4 w-4" /> Export billing
+            </Button>
+            <Button className="bg-[#3cadf1] hover:bg-[#3cadf1]/90" onClick={openCreatePlan}>
+              <Plus className="h-4 w-4" /> Create plan
+            </Button>
+          </div>
         }
       />
 
       <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <KpiCard
-          label="Current Plan"
-          value={sub.plan}
-          trend={sub.status}
-          up={true}
-          support={`${sub.amount} / ${sub.billingCycle.toLowerCase()}`}
-          icon={<CreditCard className="h-5 w-5" />}
-          variant="cyan"
-        />
-        <KpiCard
-          label="Staff Seats"
-          value={`${sub.seatsUsed} / ${sub.seats}`}
-          trend={`${seatUsage}% used`}
-          up={seatUsage < 90}
-          support="Internal user licences"
-          icon={<Users className="h-5 w-5" />}
-          variant="green"
-        />
-        <KpiCard
-          label="Client Accounts"
-          value={`${sub.clientsUsed} / ${sub.clientsLimit}`}
-          trend={`${clientUsage}% used`}
-          up={clientUsage < 90}
-          support="Portfolio capacity"
-          icon={<Building2 className="h-5 w-5" />}
-          variant="purple"
-        />
-        <KpiCard
-          label="AI Actions (month)"
-          value={`${sub.aiActionsUsed.toLocaleString()}`}
-          trend={`${aiUsage}% of limit`}
-          up={aiUsage < 90}
-          support={`Limit: ${sub.aiActionsLimit.toLocaleString()}`}
-          icon={<Sparkles className="h-5 w-5" />}
-          variant="amber"
-        />
+        <KpiCard label="Platform MRR" value={`£${totalMrr.toLocaleString()}`} trend="+8.4%" up={true} support="Recurring revenue" icon={<PoundSterling className="h-5 w-5" />} variant="cyan" />
+        <KpiCard label="Active Plans" value={String(plans.filter((p) => p.status === "Active").length)} trend="5 tiers" up={true} support="Available to firms" icon={<CreditCard className="h-5 w-5" />} variant="green" />
+        <KpiCard label="Subscriber Firms" value={String(subscriberFirms.length)} trend="+3 this month" up={true} support="On platform" icon={<Building2 className="h-5 w-5" />} variant="purple" />
+        <KpiCard label="Billing Issues" value={String(failedBilling)} trend="Needs attention" up={false} support="Failed or overdue" icon={<TrendingUp className="h-5 w-5" />} variant="amber" />
       </div>
 
-      <div className="grid gap-5 lg:grid-cols-2">
-        <Section title="Current plan" description={`${sub.firmName} · Renews ${sub.renewalDate}`}>
-          <dl className="grid gap-4 p-4 sm:grid-cols-2 sm:px-5">
-            <div>
-              <dt className="text-xs uppercase tracking-wide text-muted-foreground">Plan</dt>
-              <dd className="mt-1 text-sm font-semibold">{sub.plan}</dd>
-            </div>
-            <div>
-              <dt className="text-xs uppercase tracking-wide text-muted-foreground">Subscription status</dt>
-              <dd className="mt-1">
-                <StatusBadge tone="success">{sub.status}</StatusBadge>
-              </dd>
-            </div>
-            <div>
-              <dt className="text-xs uppercase tracking-wide text-muted-foreground">Billing cycle</dt>
-              <dd className="mt-1 text-sm font-semibold">{sub.billingCycle}</dd>
-            </div>
-            <div>
-              <dt className="text-xs uppercase tracking-wide text-muted-foreground">Billing amount</dt>
-              <dd className="mt-1 text-sm font-semibold">
-                {sub.amount} / {sub.billingCycle.toLowerCase()}
-              </dd>
-            </div>
-            <div>
-              <dt className="text-xs uppercase tracking-wide text-muted-foreground">Renewal date</dt>
-              <dd className="mt-1 text-sm">{sub.renewalDate}</dd>
-            </div>
-            <div>
-              <dt className="text-xs uppercase tracking-wide text-muted-foreground">Next billing date</dt>
-              <dd className="mt-1 text-sm">{sub.nextBilling}</dd>
-            </div>
+      <Section title="Subscription plans" description="Platform-wide plans available to subscriber firms">
+        <Table>
+          <TableHeader>
+            <TableRow className="hover:bg-transparent">
+              <TableHead className="min-w-[14rem]">Plan</TableHead>
+              <TableHead>Price</TableHead>
+              <TableHead>Limits</TableHead>
+              <TableHead>Firms</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead className="text-right w-[5.5rem]">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {plans.map((plan) => (
+              <TableRow key={plan.id}>
+                <TableCell><ListTablePrimaryCell title={plan.name} subtitle={plan.description} /></TableCell>
+                <TableCell className="font-medium tabular-nums">{plan.price}/{plan.billingPeriod === "Monthly" ? "mo" : "yr"}</TableCell>
+                <TableCell className="text-muted-foreground">{plan.clients} clients · {plan.seats} seats</TableCell>
+                <TableCell className="tabular-nums text-muted-foreground">{plan.firmsSubscribed}</TableCell>
+                <TableCell><StatusBadge tone={plan.status === "Active" ? "success" : "neutral"}>{plan.status}</StatusBadge></TableCell>
+                <TableCell className="text-right">
+                  <Button variant="outline" size="sm" className="h-8 px-3" onClick={() => openEditPlan(plan)}>Edit</Button>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </Section>
+
+      <Section title="Recent billing" description="Cross-firm billing activity" className="mt-5">
+        <Table>
+          <TableHeader>
+            <TableRow className="hover:bg-transparent">
+              <TableHead>Invoice</TableHead>
+              <TableHead className="min-w-[10rem]">Firm</TableHead>
+              <TableHead>Plan</TableHead>
+              <TableHead>Amount</TableHead>
+              <TableHead>Period</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead className="text-right w-[5.5rem]">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {billing.map((record) => (
+              <TableRow key={record.id}>
+                <TableCell className="font-mono text-xs text-muted-foreground">{record.id}</TableCell>
+                <TableCell>
+                  <Link to="/firms/$firmId" params={{ firmId: record.firmId }} className="font-semibold hover:text-[#3cadf1] transition-colors">
+                    {record.firmName}
+                  </Link>
+                </TableCell>
+                <TableCell className="text-muted-foreground">{record.plan}</TableCell>
+                <TableCell className="font-medium tabular-nums">{record.amount}</TableCell>
+                <TableCell className="text-muted-foreground">{record.period}</TableCell>
+                <TableCell><StatusBadge tone={toneForStatus(record.status)}>{record.status}</StatusBadge></TableCell>
+                <TableCell className="text-right">
+                  <Button variant="outline" size="sm" className="h-8 px-3" onClick={() => openInvoice(record)}>View</Button>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </Section>
+
+      <FormDialog
+        open={planDialogOpen}
+        onOpenChange={setPlanDialogOpen}
+        title={editingPlanId ? "Edit subscription plan" : "Create subscription plan"}
+        description="Define pricing, limits and availability for subscriber firms."
+        saveLabel={editingPlanId ? "Save changes" : "Create plan"}
+        onSave={savePlan}
+        size="lg"
+      >
+        <div className="grid gap-4 sm:grid-cols-2">
+          <PlatformFormField label="Plan name" htmlFor="plan-name" className="sm:col-span-2">
+            <Input id="plan-name" value={planForm.name} onChange={(e) => setPlanForm((f) => ({ ...f, name: e.target.value }))} placeholder="Lexarox Premium" />
+          </PlatformFormField>
+          <PlatformFormField label="Price" htmlFor="plan-price">
+            <Input id="plan-price" value={planForm.price} onChange={(e) => setPlanForm((f) => ({ ...f, price: e.target.value }))} placeholder="£249" />
+          </PlatformFormField>
+          <PlatformFormField label="Billing period" htmlFor="plan-period">
+            <Select value={planForm.billingPeriod} onValueChange={(v) => setPlanForm((f) => ({ ...f, billingPeriod: v as PlanForm["billingPeriod"] }))}>
+              <SelectTrigger id="plan-period"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Monthly">Monthly</SelectItem>
+                <SelectItem value="Annual">Annual</SelectItem>
+              </SelectContent>
+            </Select>
+          </PlatformFormField>
+          <PlatformFormField label="Client limit" htmlFor="plan-clients">
+            <Input id="plan-clients" type="number" value={planForm.clients} onChange={(e) => setPlanForm((f) => ({ ...f, clients: e.target.value }))} />
+          </PlatformFormField>
+          <PlatformFormField label="Seat limit" htmlFor="plan-seats">
+            <Input id="plan-seats" type="number" value={planForm.seats} onChange={(e) => setPlanForm((f) => ({ ...f, seats: e.target.value }))} />
+          </PlatformFormField>
+          <PlatformFormField label="Status" htmlFor="plan-status" className="sm:col-span-2">
+            <Select value={planForm.status} onValueChange={(v) => setPlanForm((f) => ({ ...f, status: v as PlanForm["status"] }))}>
+              <SelectTrigger id="plan-status"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Active">Active</SelectItem>
+                <SelectItem value="Draft">Draft</SelectItem>
+                <SelectItem value="Archived">Archived</SelectItem>
+              </SelectContent>
+            </Select>
+          </PlatformFormField>
+          <PlatformFormField label="Description" htmlFor="plan-desc" className="sm:col-span-2">
+            <Textarea id="plan-desc" rows={3} value={planForm.description} onChange={(e) => setPlanForm((f) => ({ ...f, description: e.target.value }))} />
+          </PlatformFormField>
+        </div>
+      </FormDialog>
+
+      <FormDialog
+        open={invoiceDialogOpen}
+        onOpenChange={setInvoiceDialogOpen}
+        title={selectedInvoice ? `Invoice ${selectedInvoice.id}` : "Invoice"}
+        description={selectedInvoice ? `${selectedInvoice.firmName} · ${selectedInvoice.period}` : undefined}
+        saveLabel="Download PDF"
+        onSave={() => {
+          if (selectedInvoice) {
+            downloadCsv(
+              `${selectedInvoice.id}.csv`,
+              ["Field", "Value"],
+              [
+                ["Invoice", selectedInvoice.id],
+                ["Firm", selectedInvoice.firmName],
+                ["Plan", selectedInvoice.plan],
+                ["Amount", selectedInvoice.amount],
+                ["Period", selectedInvoice.period],
+                ["Status", selectedInvoice.status],
+                ["Date", selectedInvoice.date],
+              ],
+            );
+            toast.success("Invoice downloaded");
+          }
+          return true;
+        }}
+      >
+        {selectedInvoice && (
+          <dl className="grid gap-3 sm:grid-cols-2">
+            <div><dt className="text-xs uppercase text-muted-foreground">Firm</dt><dd className="mt-1 font-medium">{selectedInvoice.firmName}</dd></div>
+            <div><dt className="text-xs uppercase text-muted-foreground">Amount</dt><dd className="mt-1 font-medium">{selectedInvoice.amount}</dd></div>
+            <div><dt className="text-xs uppercase text-muted-foreground">Plan</dt><dd className="mt-1">{selectedInvoice.plan}</dd></div>
+            <div><dt className="text-xs uppercase text-muted-foreground">Status</dt><dd className="mt-1"><StatusBadge tone={toneForStatus(selectedInvoice.status)}>{selectedInvoice.status}</StatusBadge></dd></div>
+            <div><dt className="text-xs uppercase text-muted-foreground">Billing period</dt><dd className="mt-1">{selectedInvoice.period}</dd></div>
+            <div><dt className="text-xs uppercase text-muted-foreground">Date</dt><dd className="mt-1">{selectedInvoice.date}</dd></div>
           </dl>
-        </Section>
-
-        <Section title="Billing & payment information">
-          <dl className="grid gap-4 p-4 sm:px-5">
-            <div>
-              <dt className="text-xs uppercase tracking-wide text-muted-foreground">Payment method</dt>
-              <dd className="mt-1 text-sm font-medium">{sub.paymentMethod}</dd>
-            </div>
-            <div>
-              <dt className="text-xs uppercase tracking-wide text-muted-foreground">Billing email</dt>
-              <dd className="mt-1 text-sm">{sub.billingEmail}</dd>
-            </div>
-            <div>
-              <dt className="text-xs uppercase tracking-wide text-muted-foreground">Billing address</dt>
-              <dd className="mt-1 text-sm">{sub.billingAddress}</dd>
-            </div>
-            <Button variant="outline" size="sm" className="w-fit" onClick={() => toast("Payment method update opened")}>
-              Update payment method
-            </Button>
-          </dl>
-        </Section>
-      </div>
-
-      <Section title="Available plans" description="Upgrade or downgrade your Lexarox subscription" className="mt-5">
-        <div className="grid gap-4 p-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 sm:px-5">
-          {sub.availablePlans.map((plan) => (
-            <div
-              key={plan.id}
-              className={`rounded-xl border p-4 ${plan.current ? "border-[#3cadf1] bg-[#3cadf1]/5" : "border-border"}`}
-            >
-              <p className="text-sm font-bold">{plan.name}</p>
-              <p className="mt-1 text-2xl font-black">
-                {plan.price}
-                <span className="text-sm font-normal text-muted-foreground">/mo</span>
-              </p>
-              <p className="mt-2 text-xs text-muted-foreground">
-                Up to {plan.clients} clients · {plan.seats} seats
-              </p>
-              {plan.description && (
-                <p className="mt-2 text-xs leading-relaxed text-muted-foreground">{plan.description}</p>
-              )}
-              {plan.current ? (
-                <StatusBadge tone="primary" className="mt-3">
-                  Current plan
-                </StatusBadge>
-              ) : (
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="mt-3 w-full"
-                  onClick={() => toast.success(`Plan change to ${plan.name} requested`)}
-                >
-                  {plan.id === "top-level" ? "Upgrade" : "Switch plan"}
-                </Button>
-              )}
-            </div>
-          ))}
-        </div>
-      </Section>
-
-      <Section title="Usage this billing period" className="mt-5">
-        <div className="grid gap-5 p-4 sm:grid-cols-3 sm:px-5">
-          <div>
-            <div className="mb-1.5 flex justify-between text-xs font-semibold">
-              <span className="text-muted-foreground">Staff seats</span>
-              <span>
-                {sub.seatsUsed} / {sub.seats}
-              </span>
-            </div>
-            <ProgressBar value={seatUsage} />
-          </div>
-          <div>
-            <div className="mb-1.5 flex justify-between text-xs font-semibold">
-              <span className="text-muted-foreground">Client accounts</span>
-              <span>
-                {sub.clientsUsed} / {sub.clientsLimit}
-              </span>
-            </div>
-            <ProgressBar value={clientUsage} />
-          </div>
-          <div>
-            <div className="mb-1.5 flex justify-between text-xs font-semibold">
-              <span className="text-muted-foreground">AI actions</span>
-              <span>
-                {sub.aiActionsUsed.toLocaleString()} / {sub.aiActionsLimit.toLocaleString()}
-              </span>
-            </div>
-            <ProgressBar value={aiUsage} tone="ai" />
-          </div>
-        </div>
-      </Section>
-
-      <Section title="Billing history" description="LexaRox subscription invoices" className="mt-5">
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[600px] text-sm">
-            <thead>
-              <tr className="border-b bg-muted/40 text-left text-xs uppercase tracking-wide text-muted-foreground">
-                <th className="px-4 py-2.5 font-medium">Invoice</th>
-                <th className="px-4 py-2.5 font-medium">Period</th>
-                <th className="px-4 py-2.5 font-medium">Date</th>
-                <th className="px-4 py-2.5 font-medium">Amount</th>
-                <th className="px-4 py-2.5 font-medium">Status</th>
-                <th className="px-4 py-2.5" />
-              </tr>
-            </thead>
-            <tbody className="divide-y">
-              {subscriptionInvoices.map((inv) => (
-                <tr key={inv.id} className="transition-colors hover:bg-muted/40">
-                  <td className="px-4 py-3 font-medium">{inv.id}</td>
-                  <td className="px-4 py-3 text-muted-foreground">{inv.period}</td>
-                  <td className="px-4 py-3 text-muted-foreground">{inv.date}</td>
-                  <td className="px-4 py-3 font-semibold">{inv.amount}</td>
-                  <td className="px-4 py-3">
-                    <StatusBadge tone={inv.status === "Paid" ? "success" : "warning"}>{inv.status}</StatusBadge>
-                  </td>
-                  <td className="px-4 py-3 text-right">
-                    <Button size="sm" variant="ghost" onClick={() => toast(`Downloading ${inv.id}`)}>
-                      <Download className="mr-1 h-3.5 w-3.5" /> PDF
-                    </Button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </Section>
+        )}
+      </FormDialog>
     </AppShell>
   );
 }

@@ -1,5 +1,5 @@
 import { useState, type FormEvent, type ReactNode } from "react";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import {
   ArrowRight,
   BarChart3,
@@ -34,6 +34,9 @@ import { agents, aiActivity, aiAutomationMetrics, kpis, leadConversionVelocity }
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/")({
+  beforeLoad: () => {
+    throw redirect({ to: "/login" });
+  },
   head: () => ({
     meta: [
       { title: "LexaRox Accounts — AI-First Accountancy Operations" },

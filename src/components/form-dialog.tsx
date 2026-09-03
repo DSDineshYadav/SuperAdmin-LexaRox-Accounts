@@ -18,7 +18,7 @@ type FormDialogProps = {
   children: ReactNode;
   saveLabel?: string;
   cancelLabel?: string;
-  onSave?: () => void;
+  onSave?: () => void | boolean;
   size?: "default" | "lg";
 };
 
@@ -48,8 +48,8 @@ export function FormDialog({
           {onSave && (
             <Button
               onClick={() => {
-                onSave();
-                onOpenChange(false);
+                const result = onSave();
+                if (result !== false) onOpenChange(false);
               }}
             >
               {saveLabel}

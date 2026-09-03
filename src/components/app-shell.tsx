@@ -45,7 +45,7 @@ function AppShellLayout({ children }: { children: ReactNode }) {
             <div className="relative hidden min-w-0 flex-1 md:block">
               <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
-                placeholder="Search clients, documents, tasks…"
+                placeholder="Search firms, inquiries, templates…"
                 className="h-9 max-w-md border-transparent bg-muted pl-9"
               />
             </div>
@@ -62,29 +62,29 @@ function AppShellLayout({ children }: { children: ReactNode }) {
                   <DropdownMenuLabel>Notifications</DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem className="flex-col items-start gap-0.5">
-                    <span className="text-sm">7 AI email drafts await approval</span>
-                    <span className="text-xs text-muted-foreground">26 min ago</span>
+                    <span className="text-sm">Harper &amp; Lane LLP onboarded</span>
+                    <span className="text-xs text-muted-foreground">12 min ago</span>
                   </DropdownMenuItem>
                   <DropdownMenuItem className="flex-col items-start gap-0.5">
-                    <span className="text-sm">ABC Ltd missing October statement</span>
+                    <span className="text-sm">Northgate Partners — payment failed</span>
                     <span className="text-xs text-muted-foreground">1 hr ago</span>
                   </DropdownMenuItem>
                   <DropdownMenuItem className="flex-col items-start gap-0.5">
-                    <span className="text-sm">Marisol Catering onboarding stalled</span>
-                    <span className="text-xs text-muted-foreground">Yesterday</span>
+                    <span className="text-sm">New sales inquiry — MTD Early Bird</span>
+                    <span className="text-xs text-muted-foreground">2 hrs ago</span>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <button className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-primary text-xs font-semibold text-primary-foreground">
-                    AW
+                    SC
                   </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56">
                   <DropdownMenuLabel className="flex flex-col">
-                    <span>Andrea Whitfield</span>
-                    <span className="text-xs font-normal text-muted-foreground">Admin</span>
+                    <span>Sarah Chen</span>
+                    <span className="text-xs font-normal text-muted-foreground">Super Admin</span>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem asChild>

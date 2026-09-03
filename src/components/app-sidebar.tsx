@@ -1,14 +1,12 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import {
   LayoutDashboard,
-  Users,
-  UserCog,
-  Briefcase,
+  Building2,
   CreditCard,
-  ListChecks,
+  Briefcase,
+  FileText,
+  Mail,
   MessageSquare,
-  ShieldCheck,
-  BarChart3,
   Settings,
   LifeBuoy,
 } from "lucide-react";
@@ -27,24 +25,22 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
+import { platformAdmin } from "@/lib/platform-data";
 
-const operations = [
-  { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
-  { title: "Manage Clients", url: "/clients", icon: Users },
-  { title: "Task Management", url: "/tasks", icon: ListChecks },
+const platform = [
+  { title: "Platform Dashboard", url: "/dashboard", icon: LayoutDashboard },
+  { title: "Firm Management", url: "/firms", icon: Building2 },
+  { title: "Inquiry Management", url: "/inquiries", icon: MessageSquare },
 ] as const;
 
-const intelligence = [
-  { title: "AI-Assisted Communication", url: "/communications", icon: MessageSquare },
-  { title: "Oversight", url: "/oversight", icon: ShieldCheck },
-] as const;
-
-const organisation = [
-  { title: "Manage Staff", url: "/staff", icon: UserCog },
+const catalogue = [
   { title: "Manage Services", url: "/services", icon: Briefcase },
+  { title: "Template Management", url: "/templates", icon: Mail },
+] as const;
+
+const billing = [
   { title: "Subscription Management", url: "/subscriptions", icon: CreditCard },
-  { title: "Reports", url: "/reports", icon: BarChart3 },
-  { title: "Settings", url: "/settings", icon: Settings },
+  { title: "Static Content Management", url: "/content", icon: FileText },
 ] as const;
 
 export function AppSidebar() {
@@ -54,10 +50,7 @@ export function AppSidebar() {
 
   const isActive = (url: string) => {
     if (url === "/dashboard") return pathname === "/dashboard";
-    if (url === "/tasks") {
-      return pathname === "/tasks" || (pathname.startsWith("/tasks/") && pathname !== "/tasks/create");
-    }
-    return pathname.startsWith(url);
+    return pathname === url || pathname.startsWith(`${url}/`);
   };
 
   const renderGroup = (
@@ -113,16 +106,19 @@ export function AppSidebar() {
             <img src="/favicon.png" alt="LexaRox" className="h-6 w-6" />
           ) : (
             <div className="w-full">
-              <img src="/logo.png" alt="LexaRox Accounts" className="h-8 w-auto object-contain object-left" />
+              <img src="/logo.png" alt="LexaRox Platform" className="h-8 w-auto object-contain object-left" />
             </div>
           )}
         </Link>
       </SidebarHeader>
 
       <SidebarContent className={cn("gap-1", collapsed ? "px-0" : "px-1")}>
-        {renderGroup("Operations", operations)}
-        {renderGroup("Intelligence", intelligence)}
-        {renderGroup("Organisation", organisation)}
+        {renderGroup("Platform", platform)}
+        {renderGroup("Catalogue", catalogue)}
+        {renderGroup("Billing & Content", billing)}
+        {renderGroup("Administration", [
+          { title: "System Administration", url: "/settings", icon: Settings },
+        ])}
       </SidebarContent>
 
       <SidebarFooter className={cn("gap-1 border-t border-[#3d3949]", collapsed ? "px-0 py-2" : "p-2")}>
@@ -142,7 +138,7 @@ export function AppSidebar() {
             </SidebarMenuButton>
           </SidebarMenuItem>
           <SidebarMenuItem className={cn(collapsed && "flex justify-center")}>
-            <SidebarMenuButton asChild tooltip="Admin / Account Settings">
+            <SidebarMenuButton asChild tooltip="Super Admin / Account Settings">
               <Link
                 to="/settings"
                 className={cn(
@@ -153,12 +149,12 @@ export function AppSidebar() {
                 )}
               >
                 <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-[#3cadf1] text-xs font-bold text-white">
-                  AW
+                  {platformAdmin.initials}
                 </span>
                 {!collapsed && (
                   <span className="flex min-w-0 flex-col">
-                    <span className="truncate text-sm font-bold text-white">Andrea Whitfield</span>
-                    <span className="truncate text-xs font-medium text-white/70">Admin · Account settings</span>
+                    <span className="truncate text-sm font-bold text-white">{platformAdmin.name}</span>
+                    <span className="truncate text-xs font-medium text-white/70">{platformAdmin.role} · Settings</span>
                   </span>
                 )}
               </Link>

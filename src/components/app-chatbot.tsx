@@ -49,26 +49,26 @@ type ChatMessage = {
 const welcomeMessage: ChatMessage = {
   id: "welcome",
   role: "assistant",
-  text: "Hi Andrea — I'm your LexaRox assistant. I can help with client onboarding, overdue tasks, document chases, and quick drafts. Pick a suggestion below or type your question.",
+  text: "Hi Sarah — I'm your LexaRox platform assistant. I can help with firm onboarding, subscription queries, inquiry triage and platform metrics. Pick a suggestion below or type your question.",
   time: "Just now",
 };
 
 const quickPrompts = [
-  { label: "Overdue today", prompt: "What's overdue today?", icon: CalendarClock },
-  { label: "Onboarding", prompt: "Summarise onboarding status", icon: Users },
-  { label: "Chase email", prompt: "Draft a client chase email", icon: FileText },
-  { label: "Staff load", prompt: "Show staff workload", icon: ListChecks },
+  { label: "Open inquiries", prompt: "Show open inquiries", icon: CalendarClock },
+  { label: "Firm status", prompt: "Summarise firm status", icon: Users },
+  { label: "MRR summary", prompt: "Platform MRR summary", icon: FileText },
+  { label: "Recent activity", prompt: "Show recent platform activity", icon: ListChecks },
 ] as const;
 
 const staticReplies: Record<string, string> = {
-  "what's overdue today?":
-    "You have 2 overdue tasks and 1 client document chase pending — ABC Ltd bank statement and XYZ Trading supplier review.",
-  "summarise onboarding status":
-    "2 clients are in onboarding. Brightside Consulting Ltd is at 72% (main contact verification pending). Marisol Catering is at 38% (awaiting Spanish-language documents).",
-  "draft a client chase email":
-    "Here's a draft you can review in AI-Assisted Communication:\n\n\"Hi — we're still waiting for your October bank statement to complete onboarding. Please upload via the secure portal or reply if you need help.\"",
-  "show staff workload":
-    "Daniel Okoye is at 92% capacity (1 open task above threshold). Priya Raman has 6 open tasks. Andrea Whitfield has 2 personal queue items.",
+  "show open inquiries":
+    "14 open inquiries — 5 urgent. Northgate Partners payment failure (Support) and Greenfield MTD Early Bird (Sales) need attention today.",
+  "summarise firm status":
+    "47 subscriber firms: 38 active, 1 onboarding (Harper & Lane LLP), 1 suspended (Northgate Partners), 1 trial (Greenfield Accountancy).",
+  "platform mrr summary":
+    "Platform MRR is £38,420 (+8.4% MoM). Premium plan accounts for 62% of revenue. 3 firms on trial converting this month.",
+  "show recent platform activity":
+    "Latest: Harper & Lane LLP onboarded (12 min ago), Whitfield & Partners renewed Premium (1 hr ago), new MTD sales inquiry from Greenfield (2 hrs ago).",
 };
 
 function nowLabel() {
