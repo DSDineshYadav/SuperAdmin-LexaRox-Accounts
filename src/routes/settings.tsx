@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import { Shield, Users, Building2, Plug, Bell, ScrollText, Lock, Download } from "lucide-react";
+import { Shield, Users, Building2, Plug, Bell, ScrollText, Lock, Download, UserPlus } from "lucide-react";
 import { AppShell, PageHeader } from "@/components/app-shell";
 import { FormDialog } from "@/components/form-dialog";
 import { PlatformFormField } from "@/components/platform-form-field";
@@ -9,9 +9,17 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   platformRoles,
+  platformUsers,
   platformDepartments,
   clientOnboardingConfig,
   platformIntegrations,
@@ -44,6 +52,18 @@ type RoleForm = {
 
 const emptyRoleForm: RoleForm = { name: "", description: "", permissions: "" };
 
+type UserForm = {
+  name: string;
+  email: string;
+  roleId: string;
+};
+
+const emptyUserForm: UserForm = {
+  name: "",
+  email: "",
+  roleId: "platform-admin",
+};
+
 const defaultNotifications = [
   { id: "n1", name: "Firm onboarding complete", desc: "Notify platform admins when a firm finishes setup", enabled: true },
   { id: "n2", name: "Billing failure alert", desc: "Immediate alert when firm payment fails", enabled: true },
@@ -54,20 +74,56 @@ const defaultNotifications = [
 
 function SettingsPage() {
   const [roles, setRoles] = useState(platformRoles);
+  const [users, setUsers] = useState(platformUsers);
   const [integrations, setIntegrations] = useState(platformIntegrations);
   const [onboardingSteps, setOnboardingSteps] = useState(clientOnboardingConfig);
   const [notifications, setNotifications] = useState(defaultNotifications);
   const [roleDialogOpen, setRoleDialogOpen] = useState(false);
+  const [userDialogOpen, setUserDialogOpen] = useState(false);
   const [connectDialogOpen, setConnectDialogOpen] = useState(false);
   const [editingRoleId, setEditingRoleId] = useState<string | null>(null);
   const [connectingIntegration, setConnectingIntegration] = useState<PlatformIntegration | null>(null);
   const [roleForm, setRoleForm] = useState<RoleForm>(emptyRoleForm);
+  const [userForm, setUserForm] = useState<UserForm>(emptyUserForm);
   const [apiKey, setApiKey] = useState("");
 
-  const openAddRole = () => {
-    setEditingRoleId(null);
-    setRoleForm(emptyRoleForm);
-    setRoleDialogOpen(true);
+  const roleName = (roleId: string) => roles.find((r) => r.id === roleId)?.name ?? roleId;
+
+  const openAddUser = () => {
+    setUserForm(emptyUserForm);
+    setUserDialogOpen(true);
+  };
+
+  const saveUser = (): boolean => {
+    if (!userForm.name.trim() || !userForm.email.trim()) {
+      toast.error("Name and email are required");
+      return false;
+    }
+    if (!userForm.email.includes("@")) {
+      toast.error("Enter a valid work email");
+      return false;
+    }
+    if (users.some((u) => u.email.toLowerCase() === userForm.email.trim().toLowerCase())) {
+      toast.error("A user with this email already exists");
+      return false;
+    }
+
+    const newUser = {
+      id: `pu-${Date.now()}`,
+      name: userForm.name.trim(),
+      email: userForm.email.trim().toLowerCase(),
+      roleId: userForm.roleId,
+      status: "Invited" as const,
+      added: new Date().toLocaleDateString("en-GB", { month: "short", year: "numeric" }),
+    };
+
+    setUsers((prev) => [newUser, ...prev]);
+    setRoles((prev) =>
+      prev.map((r) => (r.id === userForm.roleId ? { ...r, users: r.users + 1 } : r)),
+    );
+    toast.success(`Invitation sent to ${newUser.email}`);
+    setUserForm(emptyUserForm);
+    return true;
   };
 
   const openEditRole = (role: PlatformRole) => {
@@ -86,28 +142,15 @@ function SettingsPage() {
       return false;
     }
     const permissions = roleForm.permissions.split(",").map((p) => p.trim()).filter(Boolean);
-    if (editingRoleId) {
-      setRoles((prev) =>
-        prev.map((r) =>
-          r.id === editingRoleId
-            ? { ...r, name: roleForm.name.trim(), description: roleForm.description.trim(), permissions: permissions.length ? permissions : r.permissions }
-            : r,
-        ),
-      );
-      toast.success("Role updated");
-    } else {
-      setRoles((prev) => [
-        ...prev,
-        {
-          id: `role-${Date.now()}`,
-          name: roleForm.name.trim(),
-          description: roleForm.description.trim() || "Custom platform role.",
-          users: 0,
-          permissions: permissions.length ? permissions : ["Custom access"],
-        },
-      ]);
-      toast.success("Role created");
-    }
+    if (!editingRoleId) return false;
+    setRoles((prev) =>
+      prev.map((r) =>
+        r.id === editingRoleId
+          ? { ...r, name: roleForm.name.trim(), description: roleForm.description.trim(), permissions: permissions.length ? permissions : r.permissions }
+          : r,
+      ),
+    );
+    toast.success("Role updated");
     return true;
   };
 
@@ -150,7 +193,7 @@ function SettingsPage() {
 
       <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <KpiCard label="Platform Roles" value={String(roles.length)} trend="RBAC configured" up={true} support="Access control" icon={<Shield className="h-5 w-5" />} variant="cyan" />
-        <KpiCard label="Platform Users" value={String(roles.reduce((s, r) => s + r.users, 0))} trend="LexaRox staff" up={true} support="Internal accounts" icon={<Users className="h-5 w-5" />} variant="green" />
+        <KpiCard label="Platform Users" value={String(users.length)} trend="LexaRox staff" up={true} support="Internal accounts" icon={<Users className="h-5 w-5" />} variant="green" />
         <KpiCard label="Integrations" value={String(integrations.filter((i) => i.status === "Connected").length)} trend="Connected" up={true} support="Platform connectors" icon={<Plug className="h-5 w-5" />} variant="purple" />
         <KpiCard label="Audit Events" value={String(auditLogs.length)} trend="Recent activity" up={true} support="Consolidated logs" icon={<ScrollText className="h-5 w-5" />} variant="amber" />
       </div>
@@ -165,8 +208,16 @@ function SettingsPage() {
           <TabsTrigger value="audit">Audit Logs</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="roles" className="mt-5">
-          <Section title="Platform roles" description="LexaRox internal access control — distinct from firm staff roles">
+        <TabsContent value="roles" className="mt-5 space-y-5">
+          <Section
+            title="Platform roles"
+            description="LexaRox internal access control — distinct from firm staff roles"
+            actions={
+              <Button size="sm" className="bg-[#3cadf1] hover:bg-[#3cadf1]/90" onClick={openAddUser}>
+                <UserPlus className="h-4 w-4" /> Add User
+              </Button>
+            }
+          >
             <ul className="divide-y">
               {roles.map((role) => (
                 <li key={role.id} className="px-4 py-4 sm:px-5">
@@ -188,9 +239,34 @@ function SettingsPage() {
                 </li>
               ))}
             </ul>
-            <div className="border-t px-4 py-3 sm:px-5">
-              <Button size="sm" onClick={openAddRole}>Add platform role</Button>
-            </div>
+          </Section>
+
+          <Section title="Platform users" description="Internal LexaRox staff with platform access">
+            <ul className="divide-y">
+              {users.map((user) => (
+                <li key={user.id} className="flex items-center justify-between gap-3 px-4 py-3.5 sm:px-5">
+                  <div className="flex min-w-0 items-center gap-3">
+                    <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[#3cadf1]/15 text-xs font-bold text-[#3cadf1]">
+                      {user.name
+                        .split(" ")
+                        .map((part) => part[0])
+                        .join("")
+                        .slice(0, 2)
+                        .toUpperCase()}
+                    </span>
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-semibold">{user.name}</p>
+                      <p className="truncate text-xs text-muted-foreground">{user.email}</p>
+                    </div>
+                  </div>
+                  <div className="flex shrink-0 items-center gap-3">
+                    <StatusBadge tone="neutral">{roleName(user.roleId)}</StatusBadge>
+                    <StatusBadge tone={user.status === "Active" ? "success" : "warning"}>{user.status}</StatusBadge>
+                    <span className="hidden text-xs text-muted-foreground sm:inline">{user.added}</span>
+                  </div>
+                </li>
+              ))}
+            </ul>
           </Section>
         </TabsContent>
 
@@ -323,9 +399,9 @@ function SettingsPage() {
       <FormDialog
         open={roleDialogOpen}
         onOpenChange={setRoleDialogOpen}
-        title={editingRoleId ? "Edit platform role" : "Add platform role"}
+        title="Edit platform role"
         description="Define role name, description and module permissions."
-        saveLabel={editingRoleId ? "Save changes" : "Create role"}
+        saveLabel="Save changes"
         onSave={saveRole}
         size="lg"
       >
@@ -338,6 +414,49 @@ function SettingsPage() {
         <PlatformFormField label="Permissions" htmlFor="role-perms" hint="Comma-separated module names">
           <Input id="role-perms" value={roleForm.permissions} onChange={(e) => setRoleForm((f) => ({ ...f, permissions: e.target.value }))} placeholder="Firms, Subscriptions, Inquiries" />
         </PlatformFormField>
+      </FormDialog>
+
+      <FormDialog
+        open={userDialogOpen}
+        onOpenChange={setUserDialogOpen}
+        title="Add platform user"
+        description="Create a new LexaRox internal account and assign a platform role."
+        saveLabel="Create user"
+        onSave={saveUser}
+        size="lg"
+      >
+        <div className="grid gap-4 sm:grid-cols-2">
+          <PlatformFormField label="Full name" htmlFor="user-name" className="sm:col-span-2">
+            <Input
+              id="user-name"
+              value={userForm.name}
+              onChange={(e) => setUserForm((f) => ({ ...f, name: e.target.value }))}
+              placeholder="Alex Morgan"
+            />
+          </PlatformFormField>
+          <PlatformFormField label="Work email" htmlFor="user-email" className="sm:col-span-2">
+            <Input
+              id="user-email"
+              type="email"
+              value={userForm.email}
+              onChange={(e) => setUserForm((f) => ({ ...f, email: e.target.value }))}
+              placeholder="alex.morgan@lexarox.com"
+            />
+          </PlatformFormField>
+          <PlatformFormField label="Platform role" htmlFor="user-role" className="sm:col-span-2">
+            <Select value={userForm.roleId} onValueChange={(v) => setUserForm((f) => ({ ...f, roleId: v }))}>
+              <SelectTrigger id="user-role"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {roles.map((role) => (
+                  <SelectItem key={role.id} value={role.id}>{role.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </PlatformFormField>
+        </div>
+        <p className="text-xs text-muted-foreground">
+          An invitation email will be sent so the user can set their password and access the platform.
+        </p>
       </FormDialog>
 
       <FormDialog

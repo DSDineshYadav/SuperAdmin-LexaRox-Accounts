@@ -32,7 +32,7 @@ export const Route = createFileRoute("/templates")({
   head: () => ({
     meta: [
       { title: "Template Management — LexaRox Platform" },
-      { name: "description", content: "Maintain global email and proposal templates available to all subscriber firms." },
+      { name: "description", content: "Maintain global email templates available to all subscriber firms." },
     ],
   }),
   component: TemplateManagementPage,
@@ -58,31 +58,30 @@ function TemplateManagementPage() {
   const [templates, setTemplates] = useState(globalTemplates);
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState("all");
-  const [tab, setTab] = useState<"all" | "Email" | "Proposal">("all");
+  const [tab, setTab] = useState<"all" | "Email">("all");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState<TemplateForm>(emptyForm);
 
   const emailTemplates = templates.filter((t) => t.type === "Email");
-  const proposalTemplates = templates.filter((t) => t.type === "Proposal");
 
   const rows = useMemo(
     () =>
-      templates.filter(
+      emailTemplates.filter(
         (t) =>
           (tab === "all" || t.type === tab) &&
           (status === "all" || t.status === status) &&
           (t.name.toLowerCase().includes(query.toLowerCase()) ||
             t.category.toLowerCase().includes(query.toLowerCase())),
       ),
-    [templates, query, status, tab],
+    [emailTemplates, query, status, tab],
   );
 
   const pagination = usePagination(rows, { resetKey: `${query}-${status}-${tab}` });
 
   const openCreate = () => {
     setEditingId(null);
-    setForm({ ...emptyForm, type: tab === "Proposal" ? "Proposal" : tab === "Email" ? "Email" : "Email" });
+    setForm({ ...emptyForm, type: "Email" });
     setDialogOpen(true);
   };
 
@@ -136,7 +135,7 @@ function TemplateManagementPage() {
     <AppShell>
       <PageHeader
         title="Template Management"
-        subtitle="Maintain global email and proposal templates available to all subscriber firms."
+        subtitle="Maintain global email templates available to all subscriber firms."
         actions={
           <Button className="bg-[#3cadf1] hover:bg-[#3cadf1]/90" onClick={openCreate}>
             <Plus className="h-4 w-4" /> New template
@@ -144,17 +143,15 @@ function TemplateManagementPage() {
         }
       />
 
-      <div className="mb-6 grid gap-4 sm:grid-cols-3">
+      <div className="mb-6 grid gap-4 sm:grid-cols-2">
         <KpiCard label="Email Templates" value={String(emailTemplates.length)} trend={`${emailTemplates.filter((t) => t.status === "Active").length} active`} up={true} support="Global email library" icon={<Mail className="h-5 w-5" />} variant="cyan" />
-        <KpiCard label="Proposal Templates" value={String(proposalTemplates.length)} trend={`${proposalTemplates.filter((t) => t.status === "Active").length} active`} up={true} support="Global proposal library" icon={<FileSignature className="h-5 w-5" />} variant="green" />
-        <KpiCard label="Firms Using" value={String(Math.max(...templates.map((t) => t.firmsUsing), 0))} trend="Max adoption" up={true} support="Most-used template" icon={<FileSignature className="h-5 w-5" />} variant="purple" />
+        <KpiCard label="Firms Using" value={String(Math.max(...emailTemplates.map((t) => t.firmsUsing), 0))} trend="Max adoption" up={true} support="Most-used template" icon={<FileSignature className="h-5 w-5" />} variant="purple" />
       </div>
 
       <Tabs value={tab} onValueChange={(v) => setTab(v as typeof tab)}>
         <TabsList className="mb-4 flex h-auto flex-wrap justify-start gap-1 bg-muted/60 p-1">
           <TabsTrigger value="all">All templates</TabsTrigger>
           <TabsTrigger value="Email">Email</TabsTrigger>
-          <TabsTrigger value="Proposal">Proposal</TabsTrigger>
         </TabsList>
 
         <TabsContent value={tab} className="mt-0">
@@ -237,13 +234,7 @@ function TemplateManagementPage() {
             <Input id="tpl-name" value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} placeholder="e.g. Client Welcome — Onboarding" />
           </PlatformFormField>
           <PlatformFormField label="Type" htmlFor="tpl-type">
-            <Select value={form.type} onValueChange={(v) => setForm((f) => ({ ...f, type: v as TemplateForm["type"] }))}>
-              <SelectTrigger id="tpl-type"><SelectValue /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Email">Email</SelectItem>
-                <SelectItem value="Proposal">Proposal</SelectItem>
-              </SelectContent>
-            </Select>
+            <Input id="tpl-type" value="Email" readOnly className="bg-muted/50" />
           </PlatformFormField>
           <PlatformFormField label="Status" htmlFor="tpl-status">
             <Select value={form.status} onValueChange={(v) => setForm((f) => ({ ...f, status: v as TemplateForm["status"] }))}>

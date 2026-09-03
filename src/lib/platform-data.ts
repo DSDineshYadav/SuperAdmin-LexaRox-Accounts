@@ -259,6 +259,45 @@ export const subscriberFirms: SubscriberFirm[] = [
   },
 ];
 
+export type PlatformPlanAgent = {
+  id: string;
+  name: string;
+  description: string;
+};
+
+export const platformPlanAgents: PlatformPlanAgent[] = [
+  {
+    id: "document",
+    name: "Document Agent",
+    description: "Processes, categorises and analyses client documents.",
+  },
+  {
+    id: "onboarding",
+    name: "Client Onboarding Agent",
+    description: "Guides clients through onboarding in their own language.",
+  },
+  {
+    id: "communication",
+    name: "Communication Agent",
+    description: "Prepares emails and client communications for approval.",
+  },
+  {
+    id: "accountancy",
+    name: "Accountancy Agent",
+    description: "Supports ledger, VAT and year-end workflows.",
+  },
+  {
+    id: "task",
+    name: "Task Agent",
+    description: "Creates, routes and prioritises work across the team.",
+  },
+  {
+    id: "marketing",
+    name: "Marketing Agent",
+    description: "Supports campaigns, newsletters and client nurture.",
+  },
+];
+
 export type PlatformSubscriptionPlan = {
   id: string;
   name: string;
@@ -266,10 +305,12 @@ export type PlatformSubscriptionPlan = {
   billingPeriod: "Monthly" | "Annual";
   clients: number;
   seats: number;
+  aiActionsLimit: number;
   description: string;
   firmsSubscribed: number;
   status: "Active" | "Archived" | "Draft";
   features: string[];
+  enabledAgents: string[];
 };
 
 export const platformSubscriptionPlans: PlatformSubscriptionPlan[] = [
@@ -280,10 +321,12 @@ export const platformSubscriptionPlans: PlatformSubscriptionPlan[] = [
     billingPeriod: "Monthly",
     clients: 100,
     seats: 3,
+    aiActionsLimit: 1000,
     description: "Core CRM, client management and document handling for small firms.",
     firmsSubscribed: 12,
     status: "Active",
     features: ["Client CRM", "Document management", "Basic tasks", "Email integration"],
+    enabledAgents: ["document", "onboarding", "communication", "task"],
   },
   {
     id: "premium",
@@ -292,10 +335,12 @@ export const platformSubscriptionPlans: PlatformSubscriptionPlan[] = [
     billingPeriod: "Monthly",
     clients: 500,
     seats: 10,
+    aiActionsLimit: 5000,
     description: "Full Phase 1 modules — AML, proposals, tasks, AI communication and reports.",
     firmsSubscribed: 24,
     status: "Active",
     features: ["Everything in Essential", "AML compliance", "AI communication", "Proposals", "Reports"],
+    enabledAgents: ["document", "onboarding", "communication", "accountancy", "task"],
   },
   {
     id: "top-level",
@@ -304,10 +349,12 @@ export const platformSubscriptionPlans: PlatformSubscriptionPlan[] = [
     billingPeriod: "Monthly",
     clients: 2000,
     seats: 25,
+    aiActionsLimit: 15000,
     description: "Maximum capacity, priority support and advanced firm operations.",
     firmsSubscribed: 6,
     status: "Active",
     features: ["Everything in Premium", "Priority support", "Advanced analytics", "Custom integrations"],
+    enabledAgents: ["document", "onboarding", "communication", "accountancy", "task", "marketing"],
   },
   {
     id: "mtd",
@@ -316,10 +363,12 @@ export const platformSubscriptionPlans: PlatformSubscriptionPlan[] = [
     billingPeriod: "Monthly",
     clients: 250,
     seats: 5,
+    aiActionsLimit: 3000,
     description: "MTD-compliant workflows, VAT returns and digital record keeping.",
     firmsSubscribed: 5,
     status: "Active",
     features: ["MTD workflows", "VAT returns", "Digital records", "HMRC integration"],
+    enabledAgents: ["document", "accountancy", "task"],
   },
   {
     id: "mtd-early-bird",
@@ -328,10 +377,12 @@ export const platformSubscriptionPlans: PlatformSubscriptionPlan[] = [
     billingPeriod: "Monthly",
     clients: 250,
     seats: 5,
+    aiActionsLimit: 3000,
     description: "Limited-time MTD plan with introductory pricing for early adopters.",
     firmsSubscribed: 3,
     status: "Active",
     features: ["MTD workflows", "Introductory pricing", "Migration support"],
+    enabledAgents: ["document", "accountancy", "task"],
   },
 ];
 
@@ -453,8 +504,24 @@ export type PlatformRole = {
 export const platformRoles: PlatformRole[] = [
   { id: "super-admin", name: "Super Admin", description: "Full platform access — firms, billing, content, system config.", users: 2, permissions: ["All modules"] },
   { id: "platform-admin", name: "Platform Admin", description: "Manage firms, subscriptions and support — no system config.", users: 4, permissions: ["Firms", "Subscriptions", "Inquiries", "Templates"] },
-  { id: "support", name: "Support Agent", description: "Handle inquiries and view firm details — read-only billing.", users: 6, permissions: ["Inquiries", "Firms (view)", "Help content"] },
-  { id: "content", name: "Content Editor", description: "Manage static content, templates and marketing pages.", users: 2, permissions: ["Static content", "Templates", "Marketing"] },
+];
+
+export type PlatformUser = {
+  id: string;
+  name: string;
+  email: string;
+  roleId: string;
+  status: "Active" | "Invited";
+  added: string;
+};
+
+export const platformUsers: PlatformUser[] = [
+  { id: "pu-1", name: "Sarah Chen", email: "sarah.chen@lexarox.com", roleId: "super-admin", status: "Active", added: "Jan 2026" },
+  { id: "pu-2", name: "James Okonkwo", email: "james.okonkwo@lexarox.com", roleId: "super-admin", status: "Active", added: "Mar 2026" },
+  { id: "pu-3", name: "Emily Foster", email: "emily.foster@lexarox.com", roleId: "platform-admin", status: "Active", added: "Apr 2026" },
+  { id: "pu-4", name: "Daniel Hughes", email: "daniel.hughes@lexarox.com", roleId: "platform-admin", status: "Active", added: "May 2026" },
+  { id: "pu-5", name: "Priya Sharma", email: "priya.sharma@lexarox.com", roleId: "platform-admin", status: "Active", added: "Jun 2026" },
+  { id: "pu-6", name: "Michael Torres", email: "michael.torres@lexarox.com", roleId: "platform-admin", status: "Invited", added: "Aug 2026" },
 ];
 
 export type PlatformDepartment = {

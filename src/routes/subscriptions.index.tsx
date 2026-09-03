@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { CreditCard, Building2, PoundSterling, TrendingUp, Plus, Download } from "lucide-react";
 import { AppShell, PageHeader } from "@/components/app-shell";
@@ -25,22 +25,23 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import {
-  platformSubscriptionPlans,
   firmBillingRecords,
   subscriberFirms,
   type PlatformSubscriptionPlan,
   type FirmBillingRecord,
 } from "@/lib/platform-data";
 import { downloadCsv } from "@/lib/export-csv";
+import { getSubscriptionPlans, setSubscriptionPlans } from "@/lib/subscription-plans-store";
 import { toast } from "sonner";
 
-export const Route = createFileRoute("/subscriptions")({
+export const Route = createFileRoute("/subscriptions/")({
   head: () => ({
     meta: [
       { title: "Subscription Management — LexaRox Platform" },
       { name: "description", content: "Manage platform subscription plans and billing across all subscriber firms." },
     ],
   }),
+  loader: () => getSubscriptionPlans(),
   component: SubscriptionManagementPage,
 });
 
@@ -65,13 +66,26 @@ const emptyPlanForm: PlanForm = {
 };
 
 function SubscriptionManagementPage() {
-  const [plans, setPlans] = useState(platformSubscriptionPlans);
+  const loadedPlans = Route.useLoaderData();
+  const [plans, setPlans] = useState(loadedPlans);
   const [billing] = useState(firmBillingRecords);
   const [planDialogOpen, setPlanDialogOpen] = useState(false);
   const [invoiceDialogOpen, setInvoiceDialogOpen] = useState(false);
   const [editingPlanId, setEditingPlanId] = useState<string | null>(null);
   const [selectedInvoice, setSelectedInvoice] = useState<FirmBillingRecord | null>(null);
   const [planForm, setPlanForm] = useState<PlanForm>(emptyPlanForm);
+
+  const updatePlans = (updater: (prev: PlatformSubscriptionPlan[]) => PlatformSubscriptionPlan[]) => {
+    setPlans((prev) => {
+      const next = updater(prev);
+      setSubscriptionPlans(next);
+      return next;
+    });
+  };
+
+  useEffect(() => {
+    setPlans(loadedPlans);
+  }, [loadedPlans]);
 
   const totalMrr = subscriberFirms.reduce((sum, f) => {
     const num = parseInt(f.mrr.replace(/[^\d]/g, ""), 10);
@@ -89,12 +103,6 @@ function SubscriptionManagementPage() {
       billing.map((r) => [r.id, r.firmName, r.plan, r.amount, r.period, r.status, r.date]),
     );
     toast.success("Billing export downloaded");
-  };
-
-  const openCreatePlan = () => {
-    setEditingPlanId(null);
-    setPlanForm(emptyPlanForm);
-    setPlanDialogOpen(true);
   };
 
   const openEditPlan = (plan: PlatformSubscriptionPlan) => {
@@ -116,44 +124,27 @@ function SubscriptionManagementPage() {
       toast.error("Plan name is required");
       return false;
     }
+    if (!editingPlanId) return false;
+
     const clients = parseInt(planForm.clients, 10) || 100;
     const seats = parseInt(planForm.seats, 10) || 3;
-    if (editingPlanId) {
-      setPlans((prev) =>
-        prev.map((p) =>
-          p.id === editingPlanId
-            ? {
-                ...p,
-                name: planForm.name.trim(),
-                price: planForm.price.trim(),
-                billingPeriod: planForm.billingPeriod,
-                clients,
-                seats,
-                description: planForm.description.trim() || p.description,
-                status: planForm.status,
-              }
-            : p,
-        ),
-      );
-      toast.success("Plan updated");
-    } else {
-      setPlans((prev) => [
-        {
-          id: `plan-${Date.now()}`,
-          name: planForm.name.trim(),
-          price: planForm.price.trim(),
-          billingPeriod: planForm.billingPeriod,
-          clients,
-          seats,
-          description: planForm.description.trim() || "New subscription tier.",
-          firmsSubscribed: 0,
-          status: planForm.status,
-          features: ["Custom features"],
-        },
-        ...prev,
-      ]);
-      toast.success("Plan created");
-    }
+    updatePlans((prev) =>
+      prev.map((p) =>
+        p.id === editingPlanId
+          ? {
+              ...p,
+              name: planForm.name.trim(),
+              price: planForm.price.trim(),
+              billingPeriod: planForm.billingPeriod,
+              clients,
+              seats,
+              description: planForm.description.trim() || p.description,
+              status: planForm.status,
+            }
+          : p,
+      ),
+    );
+    toast.success("Plan updated");
     return true;
   };
 
@@ -172,8 +163,10 @@ function SubscriptionManagementPage() {
             <Button variant="outline" onClick={exportBilling}>
               <Download className="h-4 w-4" /> Export billing
             </Button>
-            <Button className="bg-[#3cadf1] hover:bg-[#3cadf1]/90" onClick={openCreatePlan}>
-              <Plus className="h-4 w-4" /> Create plan
+            <Button className="bg-[#3cadf1] hover:bg-[#3cadf1]/90" asChild>
+              <Link to="/subscriptions/create">
+                <Plus className="h-4 w-4" /> Create plan
+              </Link>
             </Button>
           </div>
         }
@@ -269,9 +262,9 @@ function SubscriptionManagementPage() {
       <FormDialog
         open={planDialogOpen}
         onOpenChange={setPlanDialogOpen}
-        title={editingPlanId ? "Edit subscription plan" : "Create subscription plan"}
-        description="Define pricing, limits and availability for subscriber firms."
-        saveLabel={editingPlanId ? "Save changes" : "Create plan"}
+        title="Edit subscription plan"
+        description="Update pricing, limits and availability for subscriber firms."
+        saveLabel="Save changes"
         onSave={savePlan}
         size="lg"
       >

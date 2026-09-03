@@ -8,7 +8,6 @@ import {
   Mail,
   MessageSquare,
   Settings,
-  LifeBuoy,
 } from "lucide-react";
 
 import {
@@ -123,20 +122,6 @@ export function AppSidebar() {
 
       <SidebarFooter className={cn("gap-1 border-t border-[#3d3949]", collapsed ? "px-0 py-2" : "p-2")}>
         <SidebarMenu className={cn(collapsed && "items-center")}>
-          <SidebarMenuItem className={cn(collapsed && "flex justify-center")}>
-            <SidebarMenuButton asChild tooltip="Help & Support">
-              <Link
-                to="/help"
-                className={cn(
-                  "flex items-center rounded-lg py-2 text-white/80 transition-all hover:bg-white/10 hover:text-white font-medium",
-                  collapsed ? "size-8 justify-center px-0" : "gap-3 px-3",
-                )}
-              >
-                <LifeBuoy className="h-4 w-4 shrink-0 text-white" />
-                {!collapsed && <span className="text-sm">Help &amp; Support</span>}
-              </Link>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
           <SidebarMenuItem className={cn(collapsed && "flex justify-center")}>
             <SidebarMenuButton asChild tooltip="Super Admin / Account Settings">
               <Link

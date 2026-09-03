@@ -16,7 +16,6 @@ import { Route as AmlRouteImport } from './routes/aml'
 import { Route as CommunicationsRouteImport } from './routes/communications'
 import { Route as ContentRouteImport } from './routes/content'
 import { Route as DashboardRouteImport } from './routes/dashboard'
-import { Route as HelpRouteImport } from './routes/help'
 import { Route as InquiriesRouteImport } from './routes/inquiries'
 import { Route as InsightsRouteImport } from './routes/insights'
 import { Route as LoginRouteImport } from './routes/login'
@@ -26,7 +25,6 @@ import { Route as ProposalsRouteImport } from './routes/proposals'
 import { Route as ReportsRouteImport } from './routes/reports'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as StaffRouteImport } from './routes/staff'
-import { Route as SubscriptionsRouteImport } from './routes/subscriptions'
 import { Route as TemplatesRouteImport } from './routes/templates'
 import { Route as ClientsIndexRouteImport } from './routes/clients.index'
 import { Route as ClientsClientIdRouteImport } from './routes/clients.$clientId'
@@ -39,6 +37,8 @@ import { Route as ServicesIndexRouteImport } from './routes/services/index'
 import { Route as ServicesServiceIdRouteImport } from './routes/services/$serviceId'
 import { Route as ServicesCreateRouteImport } from './routes/services/create'
 import { Route as StaffStaffIdRouteImport } from './routes/staff.$staffId'
+import { Route as SubscriptionsIndexRouteImport } from './routes/subscriptions.index'
+import { Route as SubscriptionsCreateRouteImport } from './routes/subscriptions.create'
 import { Route as TasksIndexRouteImport } from './routes/tasks.index'
 import { Route as TasksTaskIdRouteImport } from './routes/tasks.$taskId'
 import { Route as TasksCreateRouteImport } from './routes/tasks.create'
@@ -78,11 +78,6 @@ const ContentRoute = ContentRouteImport.update({
 const DashboardRoute = DashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const HelpRoute = HelpRouteImport.update({
-  id: '/help',
-  path: '/help',
   getParentRoute: () => rootRouteImport,
 } as any)
 const InquiriesRoute = InquiriesRouteImport.update({
@@ -128,11 +123,6 @@ const SettingsRoute = SettingsRouteImport.update({
 const StaffRoute = StaffRouteImport.update({
   id: '/staff',
   path: '/staff',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const SubscriptionsRoute = SubscriptionsRouteImport.update({
-  id: '/subscriptions',
-  path: '/subscriptions',
   getParentRoute: () => rootRouteImport,
 } as any)
 const TemplatesRoute = TemplatesRouteImport.update({
@@ -195,6 +185,16 @@ const StaffStaffIdRoute = StaffStaffIdRouteImport.update({
   path: '/$staffId',
   getParentRoute: () => StaffRoute,
 } as any)
+const SubscriptionsIndexRoute = SubscriptionsIndexRouteImport.update({
+  id: '/subscriptions/',
+  path: '/subscriptions/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SubscriptionsCreateRoute = SubscriptionsCreateRouteImport.update({
+  id: '/subscriptions/create',
+  path: '/subscriptions/create',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const TasksIndexRoute = TasksIndexRouteImport.update({
   id: '/tasks/',
   path: '/tasks/',
@@ -230,7 +230,6 @@ export interface FileRoutesByFullPath {
   '/communications': typeof CommunicationsRoute
   '/content': typeof ContentRoute
   '/dashboard': typeof DashboardRoute
-  '/help': typeof HelpRoute
   '/inquiries': typeof InquiriesRoute
   '/insights': typeof InsightsRoute
   '/login': typeof LoginRoute
@@ -240,7 +239,6 @@ export interface FileRoutesByFullPath {
   '/reports': typeof ReportsRoute
   '/settings': typeof SettingsRoute
   '/staff': typeof StaffRouteWithChildren
-  '/subscriptions': typeof SubscriptionsRoute
   '/templates': typeof TemplatesRoute
   '/clients/$clientId': typeof ClientsClientIdRoute
   '/clients/onboarding': typeof ClientsOnboardingRoute
@@ -250,11 +248,13 @@ export interface FileRoutesByFullPath {
   '/services/$serviceId': typeof ServicesServiceIdRoute
   '/services/create': typeof ServicesCreateRoute
   '/staff/$staffId': typeof StaffStaffIdRoute
+  '/subscriptions/create': typeof SubscriptionsCreateRoute
   '/tasks/$taskId': typeof TasksTaskIdRoute
   '/tasks/create': typeof TasksCreateRoute
   '/clients/': typeof ClientsIndexRoute
   '/firms/': typeof FirmsIndexRoute
   '/services/': typeof ServicesIndexRoute
+  '/subscriptions/': typeof SubscriptionsIndexRoute
   '/tasks/': typeof TasksIndexRoute
   '/services/packages/$packageId': typeof ServicesPackagesPackageIdRoute
   '/services/packages/create': typeof ServicesPackagesCreateRoute
@@ -267,7 +267,6 @@ export interface FileRoutesByTo {
   '/communications': typeof CommunicationsRoute
   '/content': typeof ContentRoute
   '/dashboard': typeof DashboardRoute
-  '/help': typeof HelpRoute
   '/inquiries': typeof InquiriesRoute
   '/insights': typeof InsightsRoute
   '/login': typeof LoginRoute
@@ -277,7 +276,6 @@ export interface FileRoutesByTo {
   '/reports': typeof ReportsRoute
   '/settings': typeof SettingsRoute
   '/staff': typeof StaffRouteWithChildren
-  '/subscriptions': typeof SubscriptionsRoute
   '/templates': typeof TemplatesRoute
   '/clients/$clientId': typeof ClientsClientIdRoute
   '/clients/onboarding': typeof ClientsOnboardingRoute
@@ -287,11 +285,13 @@ export interface FileRoutesByTo {
   '/services/$serviceId': typeof ServicesServiceIdRoute
   '/services/create': typeof ServicesCreateRoute
   '/staff/$staffId': typeof StaffStaffIdRoute
+  '/subscriptions/create': typeof SubscriptionsCreateRoute
   '/tasks/$taskId': typeof TasksTaskIdRoute
   '/tasks/create': typeof TasksCreateRoute
   '/clients': typeof ClientsIndexRoute
   '/firms': typeof FirmsIndexRoute
   '/services': typeof ServicesIndexRoute
+  '/subscriptions': typeof SubscriptionsIndexRoute
   '/tasks': typeof TasksIndexRoute
   '/services/packages/$packageId': typeof ServicesPackagesPackageIdRoute
   '/services/packages/create': typeof ServicesPackagesCreateRoute
@@ -305,7 +305,6 @@ export interface FileRoutesById {
   '/communications': typeof CommunicationsRoute
   '/content': typeof ContentRoute
   '/dashboard': typeof DashboardRoute
-  '/help': typeof HelpRoute
   '/inquiries': typeof InquiriesRoute
   '/insights': typeof InsightsRoute
   '/login': typeof LoginRoute
@@ -315,7 +314,6 @@ export interface FileRoutesById {
   '/reports': typeof ReportsRoute
   '/settings': typeof SettingsRoute
   '/staff': typeof StaffRouteWithChildren
-  '/subscriptions': typeof SubscriptionsRoute
   '/templates': typeof TemplatesRoute
   '/clients/$clientId': typeof ClientsClientIdRoute
   '/clients/onboarding': typeof ClientsOnboardingRoute
@@ -325,11 +323,13 @@ export interface FileRoutesById {
   '/services/$serviceId': typeof ServicesServiceIdRoute
   '/services/create': typeof ServicesCreateRoute
   '/staff/$staffId': typeof StaffStaffIdRoute
+  '/subscriptions/create': typeof SubscriptionsCreateRoute
   '/tasks/$taskId': typeof TasksTaskIdRoute
   '/tasks/create': typeof TasksCreateRoute
   '/clients/': typeof ClientsIndexRoute
   '/firms/': typeof FirmsIndexRoute
   '/services/': typeof ServicesIndexRoute
+  '/subscriptions/': typeof SubscriptionsIndexRoute
   '/tasks/': typeof TasksIndexRoute
   '/services/packages/$packageId': typeof ServicesPackagesPackageIdRoute
   '/services/packages/create': typeof ServicesPackagesCreateRoute
@@ -344,7 +344,6 @@ export interface FileRouteTypes {
     | '/communications'
     | '/content'
     | '/dashboard'
-    | '/help'
     | '/inquiries'
     | '/insights'
     | '/login'
@@ -354,7 +353,6 @@ export interface FileRouteTypes {
     | '/reports'
     | '/settings'
     | '/staff'
-    | '/subscriptions'
     | '/templates'
     | '/clients/$clientId'
     | '/clients/onboarding'
@@ -364,11 +362,13 @@ export interface FileRouteTypes {
     | '/services/$serviceId'
     | '/services/create'
     | '/staff/$staffId'
+    | '/subscriptions/create'
     | '/tasks/$taskId'
     | '/tasks/create'
     | '/clients/'
     | '/firms/'
     | '/services/'
+    | '/subscriptions/'
     | '/tasks/'
     | '/services/packages/$packageId'
     | '/services/packages/create'
@@ -381,7 +381,6 @@ export interface FileRouteTypes {
     | '/communications'
     | '/content'
     | '/dashboard'
-    | '/help'
     | '/inquiries'
     | '/insights'
     | '/login'
@@ -391,7 +390,6 @@ export interface FileRouteTypes {
     | '/reports'
     | '/settings'
     | '/staff'
-    | '/subscriptions'
     | '/templates'
     | '/clients/$clientId'
     | '/clients/onboarding'
@@ -401,11 +399,13 @@ export interface FileRouteTypes {
     | '/services/$serviceId'
     | '/services/create'
     | '/staff/$staffId'
+    | '/subscriptions/create'
     | '/tasks/$taskId'
     | '/tasks/create'
     | '/clients'
     | '/firms'
     | '/services'
+    | '/subscriptions'
     | '/tasks'
     | '/services/packages/$packageId'
     | '/services/packages/create'
@@ -418,7 +418,6 @@ export interface FileRouteTypes {
     | '/communications'
     | '/content'
     | '/dashboard'
-    | '/help'
     | '/inquiries'
     | '/insights'
     | '/login'
@@ -428,7 +427,6 @@ export interface FileRouteTypes {
     | '/reports'
     | '/settings'
     | '/staff'
-    | '/subscriptions'
     | '/templates'
     | '/clients/$clientId'
     | '/clients/onboarding'
@@ -438,11 +436,13 @@ export interface FileRouteTypes {
     | '/services/$serviceId'
     | '/services/create'
     | '/staff/$staffId'
+    | '/subscriptions/create'
     | '/tasks/$taskId'
     | '/tasks/create'
     | '/clients/'
     | '/firms/'
     | '/services/'
+    | '/subscriptions/'
     | '/tasks/'
     | '/services/packages/$packageId'
     | '/services/packages/create'
@@ -456,7 +456,6 @@ export interface RootRouteChildren {
   CommunicationsRoute: typeof CommunicationsRoute
   ContentRoute: typeof ContentRoute
   DashboardRoute: typeof DashboardRoute
-  HelpRoute: typeof HelpRoute
   InquiriesRoute: typeof InquiriesRoute
   InsightsRoute: typeof InsightsRoute
   LoginRoute: typeof LoginRoute
@@ -466,7 +465,6 @@ export interface RootRouteChildren {
   ReportsRoute: typeof ReportsRoute
   SettingsRoute: typeof SettingsRoute
   StaffRoute: typeof StaffRouteWithChildren
-  SubscriptionsRoute: typeof SubscriptionsRoute
   TemplatesRoute: typeof TemplatesRoute
   ClientsClientIdRoute: typeof ClientsClientIdRoute
   ClientsOnboardingRoute: typeof ClientsOnboardingRoute
@@ -474,11 +472,13 @@ export interface RootRouteChildren {
   FirmsOnboardingRoute: typeof FirmsOnboardingRoute
   ServicesServiceIdRoute: typeof ServicesServiceIdRoute
   ServicesCreateRoute: typeof ServicesCreateRoute
+  SubscriptionsCreateRoute: typeof SubscriptionsCreateRoute
   TasksTaskIdRoute: typeof TasksTaskIdRoute
   TasksCreateRoute: typeof TasksCreateRoute
   ClientsIndexRoute: typeof ClientsIndexRoute
   FirmsIndexRoute: typeof FirmsIndexRoute
   ServicesIndexRoute: typeof ServicesIndexRoute
+  SubscriptionsIndexRoute: typeof SubscriptionsIndexRoute
   TasksIndexRoute: typeof TasksIndexRoute
   ServicesPackagesPackageIdRoute: typeof ServicesPackagesPackageIdRoute
   ServicesPackagesCreateRoute: typeof ServicesPackagesCreateRoute
@@ -533,13 +533,6 @@ declare module '@tanstack/react-router' {
       path: '/dashboard'
       fullPath: '/dashboard'
       preLoaderRoute: typeof DashboardRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/help': {
-      id: '/help'
-      path: '/help'
-      fullPath: '/help'
-      preLoaderRoute: typeof HelpRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/inquiries': {
@@ -603,13 +596,6 @@ declare module '@tanstack/react-router' {
       path: '/staff'
       fullPath: '/staff'
       preLoaderRoute: typeof StaffRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/subscriptions': {
-      id: '/subscriptions'
-      path: '/subscriptions'
-      fullPath: '/subscriptions'
-      preLoaderRoute: typeof SubscriptionsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/templates': {
@@ -696,6 +682,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StaffStaffIdRouteImport
       parentRoute: typeof StaffRoute
     }
+    '/subscriptions/': {
+      id: '/subscriptions/'
+      path: '/subscriptions'
+      fullPath: '/subscriptions/'
+      preLoaderRoute: typeof SubscriptionsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/subscriptions/create': {
+      id: '/subscriptions/create'
+      path: '/subscriptions/create'
+      fullPath: '/subscriptions/create'
+      preLoaderRoute: typeof SubscriptionsCreateRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/tasks/': {
       id: '/tasks/'
       path: '/tasks'
@@ -764,7 +764,6 @@ const rootRouteChildren: RootRouteChildren = {
   CommunicationsRoute: CommunicationsRoute,
   ContentRoute: ContentRoute,
   DashboardRoute: DashboardRoute,
-  HelpRoute: HelpRoute,
   InquiriesRoute: InquiriesRoute,
   InsightsRoute: InsightsRoute,
   LoginRoute: LoginRoute,
@@ -774,7 +773,6 @@ const rootRouteChildren: RootRouteChildren = {
   ReportsRoute: ReportsRoute,
   SettingsRoute: SettingsRoute,
   StaffRoute: StaffRouteWithChildren,
-  SubscriptionsRoute: SubscriptionsRoute,
   TemplatesRoute: TemplatesRoute,
   ClientsClientIdRoute: ClientsClientIdRoute,
   ClientsOnboardingRoute: ClientsOnboardingRoute,
@@ -782,11 +780,13 @@ const rootRouteChildren: RootRouteChildren = {
   FirmsOnboardingRoute: FirmsOnboardingRoute,
   ServicesServiceIdRoute: ServicesServiceIdRoute,
   ServicesCreateRoute: ServicesCreateRoute,
+  SubscriptionsCreateRoute: SubscriptionsCreateRoute,
   TasksTaskIdRoute: TasksTaskIdRoute,
   TasksCreateRoute: TasksCreateRoute,
   ClientsIndexRoute: ClientsIndexRoute,
   FirmsIndexRoute: FirmsIndexRoute,
   ServicesIndexRoute: ServicesIndexRoute,
+  SubscriptionsIndexRoute: SubscriptionsIndexRoute,
   TasksIndexRoute: TasksIndexRoute,
   ServicesPackagesPackageIdRoute: ServicesPackagesPackageIdRoute,
   ServicesPackagesCreateRoute: ServicesPackagesCreateRoute,
