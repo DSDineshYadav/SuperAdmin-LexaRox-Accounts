@@ -148,9 +148,10 @@ function PlatformDashboard() {
           description="MRR, subscriber firms and new signups over time"
           className="lg:col-span-2"
         >
-          <div className="h-80 p-4 sm:px-5">
-            <ResponsiveContainer width="100%" height="100%">
-              <ComposedChart data={platformFirmGrowth} margin={{ top: 8, right: 4, left: 0, bottom: 0 }}>
+          <div className="p-4 pb-5 sm:px-5">
+            <div className="h-72 w-full">
+              <ResponsiveContainer width="100%" height="100%">
+              <ComposedChart data={platformFirmGrowth} margin={{ top: 8, right: 4, left: 0, bottom: 8 }}>
                 <defs>
                   <linearGradient id="mrrAreaFill" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="0%" stopColor="#3cadf1" stopOpacity={0.35} />
@@ -221,9 +222,10 @@ function PlatformDashboard() {
                 />
               </ComposedChart>
             </ResponsiveContainer>
-            <div className="mt-3 flex flex-wrap items-center justify-center gap-x-5 gap-y-2">
+            </div>
+            <div className="mt-4 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 pb-1">
               {growthLegend.map((item) => (
-                <span key={item.key} className="inline-flex items-center gap-2 text-xs font-medium text-muted-foreground">
+                <span key={item.key} className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground">
                   <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: item.color }} />
                   {item.label}
                 </span>
