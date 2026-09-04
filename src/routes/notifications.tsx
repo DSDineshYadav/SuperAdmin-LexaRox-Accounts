@@ -12,6 +12,13 @@ import {
 } from "@/components/kit";
 import { usePagination } from "@/hooks/use-pagination";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -65,6 +72,7 @@ function NotificationsPage() {
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState("all");
   const [readFilter, setReadFilter] = useState("all");
+  const [selectedNotification, setSelectedNotification] = useState<PlatformNotification | null>(null);
 
   const unreadCount = notifications.filter((item) => !item.read).length;
   const todayCount = notifications.filter((item) =>
@@ -94,9 +102,15 @@ function NotificationsPage() {
 
   const pagination = usePagination(rows, { resetKey: `${query}-${category}-${readFilter}` });
 
-  const markAsRead = (id: string) => {
-    setNotifications((prev) => prev.map((item) => (item.id === id ? { ...item, read: true } : item)));
-    toast.success("Notification marked as read");
+  const openNotification = (item: PlatformNotification) => {
+    if (!item.read) {
+      setNotifications((prev) =>
+        prev.map((notification) =>
+          notification.id === item.id ? { ...notification, read: true } : notification,
+        ),
+      );
+    }
+    setSelectedNotification(item.read ? item : { ...item, read: true });
   };
 
   const markAllRead = () => {
@@ -229,13 +243,14 @@ function NotificationsPage() {
                     </TableCell>
                     <TableCell className="hidden sm:table-cell text-muted-foreground">{item.received}</TableCell>
                     <TableCell className="text-right">
-                      {!item.read ? (
-                        <Button variant="outline" size="sm" className="h-8 px-3" onClick={() => markAsRead(item.id)}>
-                          Mark read
-                        </Button>
-                      ) : (
-                        <span className="text-xs text-muted-foreground">—</span>
-                      )}
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-8 px-3"
+                        onClick={() => openNotification(item)}
+                      >
+                        View
+                      </Button>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -252,6 +267,49 @@ function NotificationsPage() {
           </>
         )}
       </ListTableCard>
+
+      <Dialog open={selectedNotification !== null} onOpenChange={(open) => !open && setSelectedNotification(null)}>
+        <DialogContent className="max-w-lg">
+          {selectedNotification && (
+            <>
+              <DialogHeader>
+                <DialogTitle>{selectedNotification.title}</DialogTitle>
+                <DialogDescription>
+                  {selectedNotification.category} · Received {selectedNotification.received}
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div className="flex flex-wrap gap-2">
+                  <StatusBadge tone={categoryTone(selectedNotification.category)}>
+                    {selectedNotification.category}
+                  </StatusBadge>
+                  <StatusBadge tone={selectedNotification.read ? "neutral" : "info"} dot>
+                    {selectedNotification.read ? "Read" : "Unread"}
+                  </StatusBadge>
+                </div>
+                <dl className="grid gap-3 rounded-lg border bg-muted/20 p-4">
+                  {selectedNotification.firmName && (
+                    <div>
+                      <dt className="text-xs uppercase tracking-wide text-muted-foreground">Firm</dt>
+                      <dd className="mt-1 text-sm font-medium">{selectedNotification.firmName}</dd>
+                    </div>
+                  )}
+                  <div>
+                    <dt className="text-xs uppercase tracking-wide text-muted-foreground">Details</dt>
+                    <dd className="mt-1 text-sm leading-relaxed text-muted-foreground">
+                      {selectedNotification.message}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="text-xs uppercase tracking-wide text-muted-foreground">Received</dt>
+                    <dd className="mt-1 text-sm">{selectedNotification.received}</dd>
+                  </div>
+                </dl>
+              </div>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
     </AppShell>
   );
 }
