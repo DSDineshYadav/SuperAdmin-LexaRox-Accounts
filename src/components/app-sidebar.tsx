@@ -8,6 +8,7 @@ import {
   Mail,
   MessageSquare,
   Settings,
+  Users,
 } from "lucide-react";
 
 import {
@@ -116,6 +117,7 @@ export function AppSidebar() {
         {renderGroup("Catalogue", catalogue)}
         {renderGroup("Billing & Content", billing)}
         {renderGroup("Administration", [
+          { title: "Subadmin Management", url: "/subadmin-management", icon: Users },
           { title: "System Administration", url: "/settings", icon: Settings },
         ])}
       </SidebarContent>

@@ -25,6 +25,7 @@ import { Route as ProposalsRouteImport } from './routes/proposals'
 import { Route as ReportsRouteImport } from './routes/reports'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as StaffRouteImport } from './routes/staff'
+import { Route as SubadminManagementRouteImport } from './routes/subadmin-management'
 import { Route as TemplatesRouteImport } from './routes/templates'
 import { Route as ClientsIndexRouteImport } from './routes/clients.index'
 import { Route as ClientsClientIdRouteImport } from './routes/clients.$clientId'
@@ -123,6 +124,11 @@ const SettingsRoute = SettingsRouteImport.update({
 const StaffRoute = StaffRouteImport.update({
   id: '/staff',
   path: '/staff',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SubadminManagementRoute = SubadminManagementRouteImport.update({
+  id: '/subadmin-management',
+  path: '/subadmin-management',
   getParentRoute: () => rootRouteImport,
 } as any)
 const TemplatesRoute = TemplatesRouteImport.update({
@@ -239,6 +245,7 @@ export interface FileRoutesByFullPath {
   '/reports': typeof ReportsRoute
   '/settings': typeof SettingsRoute
   '/staff': typeof StaffRouteWithChildren
+  '/subadmin-management': typeof SubadminManagementRoute
   '/templates': typeof TemplatesRoute
   '/clients/$clientId': typeof ClientsClientIdRoute
   '/clients/onboarding': typeof ClientsOnboardingRoute
@@ -276,6 +283,7 @@ export interface FileRoutesByTo {
   '/reports': typeof ReportsRoute
   '/settings': typeof SettingsRoute
   '/staff': typeof StaffRouteWithChildren
+  '/subadmin-management': typeof SubadminManagementRoute
   '/templates': typeof TemplatesRoute
   '/clients/$clientId': typeof ClientsClientIdRoute
   '/clients/onboarding': typeof ClientsOnboardingRoute
@@ -314,6 +322,7 @@ export interface FileRoutesById {
   '/reports': typeof ReportsRoute
   '/settings': typeof SettingsRoute
   '/staff': typeof StaffRouteWithChildren
+  '/subadmin-management': typeof SubadminManagementRoute
   '/templates': typeof TemplatesRoute
   '/clients/$clientId': typeof ClientsClientIdRoute
   '/clients/onboarding': typeof ClientsOnboardingRoute
@@ -353,6 +362,7 @@ export interface FileRouteTypes {
     | '/reports'
     | '/settings'
     | '/staff'
+    | '/subadmin-management'
     | '/templates'
     | '/clients/$clientId'
     | '/clients/onboarding'
@@ -390,6 +400,7 @@ export interface FileRouteTypes {
     | '/reports'
     | '/settings'
     | '/staff'
+    | '/subadmin-management'
     | '/templates'
     | '/clients/$clientId'
     | '/clients/onboarding'
@@ -427,6 +438,7 @@ export interface FileRouteTypes {
     | '/reports'
     | '/settings'
     | '/staff'
+    | '/subadmin-management'
     | '/templates'
     | '/clients/$clientId'
     | '/clients/onboarding'
@@ -465,6 +477,7 @@ export interface RootRouteChildren {
   ReportsRoute: typeof ReportsRoute
   SettingsRoute: typeof SettingsRoute
   StaffRoute: typeof StaffRouteWithChildren
+  SubadminManagementRoute: typeof SubadminManagementRoute
   TemplatesRoute: typeof TemplatesRoute
   ClientsClientIdRoute: typeof ClientsClientIdRoute
   ClientsOnboardingRoute: typeof ClientsOnboardingRoute
@@ -596,6 +609,13 @@ declare module '@tanstack/react-router' {
       path: '/staff'
       fullPath: '/staff'
       preLoaderRoute: typeof StaffRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/subadmin-management': {
+      id: '/subadmin-management'
+      path: '/subadmin-management'
+      fullPath: '/subadmin-management'
+      preLoaderRoute: typeof SubadminManagementRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/templates': {
@@ -773,6 +793,7 @@ const rootRouteChildren: RootRouteChildren = {
   ReportsRoute: ReportsRoute,
   SettingsRoute: SettingsRoute,
   StaffRoute: StaffRouteWithChildren,
+  SubadminManagementRoute: SubadminManagementRoute,
   TemplatesRoute: TemplatesRoute,
   ClientsClientIdRoute: ClientsClientIdRoute,
   ClientsOnboardingRoute: ClientsOnboardingRoute,

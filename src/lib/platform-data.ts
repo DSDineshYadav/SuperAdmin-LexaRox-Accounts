@@ -506,6 +506,37 @@ export const platformRoles: PlatformRole[] = [
   { id: "platform-admin", name: "Platform Admin", description: "Manage firms, subscriptions and support — no system config.", users: 4, permissions: ["Firms", "Subscriptions", "Inquiries", "Templates"] },
 ];
 
+export type PlatformPermissionModule = {
+  id: string;
+  name: string;
+  description: string;
+};
+
+export const platformPermissionModules: PlatformPermissionModule[] = [
+  { id: "dashboard", name: "Dashboard", description: "View platform overview, KPIs and activity." },
+  { id: "firms", name: "Firm Management", description: "Manage subscriber firms and onboarding." },
+  { id: "inquiries", name: "Inquiry Management", description: "Handle sales, support and partnership inquiries." },
+  { id: "services", name: "Manage Services", description: "Configure the platform service catalogue." },
+  { id: "templates", name: "Template Management", description: "Manage global email and proposal templates." },
+  { id: "subscriptions", name: "Subscription Management", description: "Create and manage subscription plans." },
+  { id: "content", name: "Static Content", description: "Edit legal, help and marketing pages." },
+  { id: "subadmin", name: "Subadmin Management", description: "Manage internal platform users and access." },
+  { id: "settings", name: "System Administration", description: "Roles, integrations, onboarding and audit logs." },
+];
+
+const platformAdminDefaultPermissions = ["firms", "inquiries", "services", "templates", "subscriptions"];
+
+export function getDefaultPermissionsForRole(roleId: string): string[] {
+  if (roleId === "super-admin") {
+    return platformPermissionModules.map((module) => module.id);
+  }
+  return [...platformAdminDefaultPermissions];
+}
+
+export function getPermissionModuleName(permissionId: string): string {
+  return platformPermissionModules.find((module) => module.id === permissionId)?.name ?? permissionId;
+}
+
 export type PlatformUser = {
   id: string;
   name: string;
@@ -513,15 +544,71 @@ export type PlatformUser = {
   roleId: string;
   status: "Active" | "Invited";
   added: string;
+  enabled: boolean;
+  permissions: string[];
 };
 
 export const platformUsers: PlatformUser[] = [
-  { id: "pu-1", name: "Sarah Chen", email: "sarah.chen@lexarox.com", roleId: "super-admin", status: "Active", added: "Jan 2026" },
-  { id: "pu-2", name: "James Okonkwo", email: "james.okonkwo@lexarox.com", roleId: "super-admin", status: "Active", added: "Mar 2026" },
-  { id: "pu-3", name: "Emily Foster", email: "emily.foster@lexarox.com", roleId: "platform-admin", status: "Active", added: "Apr 2026" },
-  { id: "pu-4", name: "Daniel Hughes", email: "daniel.hughes@lexarox.com", roleId: "platform-admin", status: "Active", added: "May 2026" },
-  { id: "pu-5", name: "Priya Sharma", email: "priya.sharma@lexarox.com", roleId: "platform-admin", status: "Active", added: "Jun 2026" },
-  { id: "pu-6", name: "Michael Torres", email: "michael.torres@lexarox.com", roleId: "platform-admin", status: "Invited", added: "Aug 2026" },
+  {
+    id: "pu-1",
+    name: "Sarah Chen",
+    email: "sarah.chen@lexarox.com",
+    roleId: "super-admin",
+    status: "Active",
+    added: "Jan 2026",
+    enabled: true,
+    permissions: getDefaultPermissionsForRole("super-admin"),
+  },
+  {
+    id: "pu-2",
+    name: "James Okonkwo",
+    email: "james.okonkwo@lexarox.com",
+    roleId: "super-admin",
+    status: "Active",
+    added: "Mar 2026",
+    enabled: true,
+    permissions: getDefaultPermissionsForRole("super-admin"),
+  },
+  {
+    id: "pu-3",
+    name: "Emily Foster",
+    email: "emily.foster@lexarox.com",
+    roleId: "platform-admin",
+    status: "Active",
+    added: "Apr 2026",
+    enabled: true,
+    permissions: getDefaultPermissionsForRole("platform-admin"),
+  },
+  {
+    id: "pu-4",
+    name: "Daniel Hughes",
+    email: "daniel.hughes@lexarox.com",
+    roleId: "platform-admin",
+    status: "Active",
+    added: "May 2026",
+    enabled: true,
+    permissions: ["firms", "inquiries", "templates", "subscriptions"],
+  },
+  {
+    id: "pu-5",
+    name: "Priya Sharma",
+    email: "priya.sharma@lexarox.com",
+    roleId: "platform-admin",
+    status: "Active",
+    added: "Jun 2026",
+    enabled: true,
+    permissions: getDefaultPermissionsForRole("platform-admin"),
+  },
+  {
+    id: "pu-6",
+    name: "Michael Torres",
+    email: "michael.torres@lexarox.com",
+    roleId: "platform-admin",
+    status: "Invited",
+    added: "Aug 2026",
+    enabled: true,
+    permissions: ["firms", "inquiries"],
+  },
 ];
 
 export type PlatformDepartment = {

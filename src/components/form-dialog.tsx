@@ -20,6 +20,7 @@ type FormDialogProps = {
   cancelLabel?: string;
   onSave?: () => void | boolean;
   size?: "default" | "lg";
+  scrollable?: boolean;
 };
 
 export function FormDialog({
@@ -32,16 +33,29 @@ export function FormDialog({
   cancelLabel = "Cancel",
   onSave,
   size = "default",
+  scrollable = false,
 }: FormDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className={cn(size === "lg" && "max-w-2xl")}>
-        <DialogHeader>
+      <DialogContent
+        className={cn(
+          size === "lg" && "max-w-2xl",
+          scrollable && "flex max-h-[90vh] flex-col overflow-hidden",
+        )}
+      >
+        <DialogHeader className={cn(scrollable && "shrink-0")}>
           <DialogTitle>{title}</DialogTitle>
           {description && <DialogDescription>{description}</DialogDescription>}
         </DialogHeader>
-        <div className="grid gap-4 py-2">{children}</div>
-        <DialogFooter>
+        <div
+          className={cn(
+            "grid gap-4 py-2",
+            scrollable && "min-h-0 flex-1 overflow-y-auto",
+          )}
+        >
+          {children}
+        </div>
+        <DialogFooter className={cn(scrollable && "shrink-0 border-t pt-4")}>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             {cancelLabel}
           </Button>

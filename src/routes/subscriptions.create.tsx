@@ -1,13 +1,12 @@
 import { useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { Building2, ChevronDown, CreditCard, Sparkles } from "lucide-react";
+import { Building2, CreditCard, Sparkles } from "lucide-react";
 import { AppShell, PageHeader } from "@/components/app-shell";
 import { PageBackLink } from "@/components/page-back-link";
 import { PlatformFormField } from "@/components/platform-form-field";
 import { ProgressBar, Section } from "@/components/kit";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -19,7 +18,6 @@ import {
 } from "@/components/ui/select";
 import {
   platformPlanAgents,
-  platformSubscriptionPlans,
   type PlatformSubscriptionPlan,
 } from "@/lib/platform-data";
 import { addSubscriptionPlan } from "@/lib/subscription-plans-store";
@@ -41,8 +39,6 @@ const steps = [
   { id: 2, label: "Plan details", icon: Building2 },
   { id: 3, label: "AI agents", icon: Sparkles },
 ] as const;
-
-const basePlans = platformSubscriptionPlans.filter((p) => p.status === "Active");
 
 type PlanForm = {
   name: string;
@@ -72,60 +68,19 @@ const emptyPlanForm: PlanForm = {
   enabledAgents: defaultEnabledAgents,
 };
 
-function applyPlanTemplate(plan: PlatformSubscriptionPlan): PlanForm {
-  return {
-    name: plan.name,
-    price: plan.price,
-    billingPeriod: plan.billingPeriod,
-    clients: String(plan.clients),
-    seats: String(plan.seats),
-    aiActionsLimit: String(plan.aiActionsLimit),
-    description: plan.description,
-    status: plan.status,
-    enabledAgents: Object.fromEntries(
-      platformPlanAgents.map((agent) => [agent.id, plan.enabledAgents.includes(agent.id)]),
-    ) as Record<string, boolean>,
-  };
-}
-
-function PlanOptionDetails({ plan }: { plan: PlatformSubscriptionPlan }) {
-  return (
-    <div className="min-w-0 pr-2">
-      <p className="font-semibold text-foreground">{plan.name}</p>
-      <p className="mt-0.5 text-sm font-medium text-[#3cadf1]">
-        {plan.price}/{plan.billingPeriod === "Monthly" ? "mo" : "yr"}
-      </p>
-      <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">{plan.description}</p>
-      <p className="mt-1.5 text-xs text-muted-foreground">
-        {plan.seats} seats · {plan.clients} clients · {plan.aiActionsLimit.toLocaleString()} AI actions
-      </p>
-    </div>
-  );
-}
-
 function CreateSubscriptionPlanPage() {
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
   const [form, setForm] = useState<PlanForm>(emptyPlanForm);
-  const [selectedPlanId, setSelectedPlanId] = useState<string>("");
-  const [planPickerOpen, setPlanPickerOpen] = useState(false);
 
-  const selectedPlan = basePlans.find((p) => p.id === selectedPlanId);
   const clients = parseInt(form.clients, 10) || 0;
   const seats = parseInt(form.seats, 10) || 0;
   const aiActionsLimit = parseInt(form.aiActionsLimit, 10) || 0;
   const progress = Math.round((step / steps.length) * 100);
 
-  const selectBasePlan = (planId: string) => {
-    setSelectedPlanId(planId);
-    const plan = basePlans.find((p) => p.id === planId);
-    if (plan) setForm(applyPlanTemplate(plan));
-    setPlanPickerOpen(false);
-  };
-
   const validateStep1 = () => {
-    if (!selectedPlanId) {
-      toast.error("Please select a base plan");
+    if (!form.name.trim()) {
+      toast.error("Plan name is required");
       return false;
     }
     if (!seats || seats < 1) {
@@ -155,7 +110,7 @@ function CreateSubscriptionPlanPage() {
 
     const newPlan: PlatformSubscriptionPlan = {
       id: `plan-${Date.now()}`,
-      name: form.name.trim() || selectedPlan?.name || "New plan",
+      name: form.name.trim(),
       price: form.price.trim(),
       billingPeriod: form.billingPeriod,
       clients: clients || 100,
@@ -214,45 +169,15 @@ function CreateSubscriptionPlanPage() {
       </div>
 
       {step === 1 && (
-        <Section title="Plan limits" description="Choose a base plan and adjust pricing and resource caps">
+        <Section title="Plan limits" description="Set the plan name, pricing and resource caps">
           <div className="grid gap-4 p-4 sm:grid-cols-2 sm:px-5 sm:pb-5">
-            <PlatformFormField label="Select plan" htmlFor="plan-select" className="sm:col-span-2">
-              <Popover open={planPickerOpen} onOpenChange={setPlanPickerOpen}>
-                <PopoverTrigger asChild>
-                  <Button
-                    id="plan-select"
-                    variant="outline"
-                    role="combobox"
-                    aria-expanded={planPickerOpen}
-                    className="h-auto min-h-9 w-full justify-between px-3 py-2 font-normal"
-                  >
-                    {selectedPlan ? (
-                      <span className="truncate text-left font-semibold">{selectedPlan.name}</span>
-                    ) : (
-                      <span className="text-muted-foreground">Choose a base plan</span>
-                    )}
-                    <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-1" align="start">
-                  <ul className="max-h-80 overflow-y-auto">
-                    {basePlans.map((plan) => (
-                      <li key={plan.id}>
-                        <button
-                          type="button"
-                          onClick={() => selectBasePlan(plan.id)}
-                          className={cn(
-                            "w-full rounded-md px-3 py-3 text-left transition-colors hover:bg-muted/60",
-                            selectedPlanId === plan.id && "bg-[#3cadf1]/5 ring-1 ring-inset ring-[#3cadf1]/30",
-                          )}
-                        >
-                          <PlanOptionDetails plan={plan} />
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
-                </PopoverContent>
-              </Popover>
+            <PlatformFormField label="Plan name" htmlFor="plan-name" className="sm:col-span-2">
+              <Input
+                id="plan-name"
+                value={form.name}
+                onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
+                placeholder="Lexarox Premium"
+              />
             </PlatformFormField>
 
             <PlatformFormField label="Price" htmlFor="plan-price">

@@ -1,33 +1,22 @@
 import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import { Shield, Users, Building2, Plug, Bell, ScrollText, Lock, Download, UserPlus } from "lucide-react";
+import { Shield, Users, Plug, Bell, ScrollText, Lock, Download } from "lucide-react";
 import { AppShell, PageHeader } from "@/components/app-shell";
 import { FormDialog } from "@/components/form-dialog";
 import { PlatformFormField } from "@/components/platform-form-field";
 import { KpiCard, Section, StatusBadge } from "@/components/kit";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   platformRoles,
-  platformUsers,
-  platformDepartments,
-  clientOnboardingConfig,
   platformIntegrations,
   auditLogs,
   platformAdmin,
-  type PlatformRole,
   type PlatformIntegration,
 } from "@/lib/platform-data";
+import { getPlatformUsers } from "@/lib/platform-users-store";
 import { downloadCsv } from "@/lib/export-csv";
 import { toast } from "sonner";
 
@@ -37,32 +26,12 @@ export const Route = createFileRoute("/settings")({
       { title: "System Administration — LexaRox Platform" },
       {
         name: "description",
-        content: "Platform roles, departments, onboarding config, integrations, notifications and audit logs.",
+        content: "Platform roles, integrations, notifications and audit logs.",
       },
     ],
   }),
   component: SettingsPage,
 });
-
-type RoleForm = {
-  name: string;
-  description: string;
-  permissions: string;
-};
-
-const emptyRoleForm: RoleForm = { name: "", description: "", permissions: "" };
-
-type UserForm = {
-  name: string;
-  email: string;
-  roleId: string;
-};
-
-const emptyUserForm: UserForm = {
-  name: "",
-  email: "",
-  roleId: "platform-admin",
-};
 
 const defaultNotifications = [
   { id: "n1", name: "Firm onboarding complete", desc: "Notify platform admins when a firm finishes setup", enabled: true },
@@ -73,86 +42,12 @@ const defaultNotifications = [
 ];
 
 function SettingsPage() {
-  const [roles, setRoles] = useState(platformRoles);
-  const [users, setUsers] = useState(platformUsers);
+  const platformUserCount = getPlatformUsers().length;
   const [integrations, setIntegrations] = useState(platformIntegrations);
-  const [onboardingSteps, setOnboardingSteps] = useState(clientOnboardingConfig);
   const [notifications, setNotifications] = useState(defaultNotifications);
-  const [roleDialogOpen, setRoleDialogOpen] = useState(false);
-  const [userDialogOpen, setUserDialogOpen] = useState(false);
   const [connectDialogOpen, setConnectDialogOpen] = useState(false);
-  const [editingRoleId, setEditingRoleId] = useState<string | null>(null);
   const [connectingIntegration, setConnectingIntegration] = useState<PlatformIntegration | null>(null);
-  const [roleForm, setRoleForm] = useState<RoleForm>(emptyRoleForm);
-  const [userForm, setUserForm] = useState<UserForm>(emptyUserForm);
   const [apiKey, setApiKey] = useState("");
-
-  const roleName = (roleId: string) => roles.find((r) => r.id === roleId)?.name ?? roleId;
-
-  const openAddUser = () => {
-    setUserForm(emptyUserForm);
-    setUserDialogOpen(true);
-  };
-
-  const saveUser = (): boolean => {
-    if (!userForm.name.trim() || !userForm.email.trim()) {
-      toast.error("Name and email are required");
-      return false;
-    }
-    if (!userForm.email.includes("@")) {
-      toast.error("Enter a valid work email");
-      return false;
-    }
-    if (users.some((u) => u.email.toLowerCase() === userForm.email.trim().toLowerCase())) {
-      toast.error("A user with this email already exists");
-      return false;
-    }
-
-    const newUser = {
-      id: `pu-${Date.now()}`,
-      name: userForm.name.trim(),
-      email: userForm.email.trim().toLowerCase(),
-      roleId: userForm.roleId,
-      status: "Invited" as const,
-      added: new Date().toLocaleDateString("en-GB", { month: "short", year: "numeric" }),
-    };
-
-    setUsers((prev) => [newUser, ...prev]);
-    setRoles((prev) =>
-      prev.map((r) => (r.id === userForm.roleId ? { ...r, users: r.users + 1 } : r)),
-    );
-    toast.success(`Invitation sent to ${newUser.email}`);
-    setUserForm(emptyUserForm);
-    return true;
-  };
-
-  const openEditRole = (role: PlatformRole) => {
-    setEditingRoleId(role.id);
-    setRoleForm({
-      name: role.name,
-      description: role.description,
-      permissions: role.permissions.join(", "),
-    });
-    setRoleDialogOpen(true);
-  };
-
-  const saveRole = (): boolean => {
-    if (!roleForm.name.trim()) {
-      toast.error("Role name is required");
-      return false;
-    }
-    const permissions = roleForm.permissions.split(",").map((p) => p.trim()).filter(Boolean);
-    if (!editingRoleId) return false;
-    setRoles((prev) =>
-      prev.map((r) =>
-        r.id === editingRoleId
-          ? { ...r, name: roleForm.name.trim(), description: roleForm.description.trim(), permissions: permissions.length ? permissions : r.permissions }
-          : r,
-      ),
-    );
-    toast.success("Role updated");
-    return true;
-  };
 
   const openConnect = (integration: PlatformIntegration) => {
     setConnectingIntegration(integration);
@@ -188,12 +83,12 @@ function SettingsPage() {
     <AppShell>
       <PageHeader
         title="System Administration"
-        subtitle="Roles & permissions, department configuration, client-onboarding setup, integrations, notifications and audit logs."
+        subtitle="Roles & permissions, integrations, notifications and audit logs."
       />
 
       <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <KpiCard label="Platform Roles" value={String(roles.length)} trend="RBAC configured" up={true} support="Access control" icon={<Shield className="h-5 w-5" />} variant="cyan" />
-        <KpiCard label="Platform Users" value={String(users.length)} trend="LexaRox staff" up={true} support="Internal accounts" icon={<Users className="h-5 w-5" />} variant="green" />
+        <KpiCard label="Platform Roles" value={String(platformRoles.length)} trend="RBAC configured" up={true} support="Access control" icon={<Shield className="h-5 w-5" />} variant="cyan" />
+        <KpiCard label="Platform Users" value={String(platformUserCount)} trend="LexaRox staff" up={true} support="Internal accounts" icon={<Users className="h-5 w-5" />} variant="green" />
         <KpiCard label="Integrations" value={String(integrations.filter((i) => i.status === "Connected").length)} trend="Connected" up={true} support="Platform connectors" icon={<Plug className="h-5 w-5" />} variant="purple" />
         <KpiCard label="Audit Events" value={String(auditLogs.length)} trend="Recent activity" up={true} support="Consolidated logs" icon={<ScrollText className="h-5 w-5" />} variant="amber" />
       </div>
@@ -201,117 +96,23 @@ function SettingsPage() {
       <Tabs defaultValue="roles">
         <TabsList className="flex h-auto flex-wrap justify-start gap-1 bg-muted/60 p-1">
           <TabsTrigger value="roles">Roles & Permissions</TabsTrigger>
-          <TabsTrigger value="departments">Departments</TabsTrigger>
-          <TabsTrigger value="onboarding">Client Onboarding</TabsTrigger>
           <TabsTrigger value="integrations">Integrations</TabsTrigger>
           <TabsTrigger value="notifications">Notifications</TabsTrigger>
           <TabsTrigger value="audit">Audit Logs</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="roles" className="mt-5 space-y-5">
-          <Section
-            title="Platform roles"
-            description="LexaRox internal access control — distinct from firm staff roles"
-            actions={
-              <Button size="sm" className="bg-[#3cadf1] hover:bg-[#3cadf1]/90" onClick={openAddUser}>
-                <UserPlus className="h-4 w-4" /> Add User
-              </Button>
-            }
-          >
-            <ul className="divide-y">
-              {roles.map((role) => (
-                <li key={role.id} className="px-4 py-4 sm:px-5">
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0">
-                      <p className="font-semibold">{role.name}</p>
-                      <p className="mt-0.5 text-sm text-muted-foreground">{role.description}</p>
-                      <div className="mt-2 flex flex-wrap gap-1.5">
-                        {role.permissions.map((p) => (
-                          <StatusBadge key={p} tone="info">{p}</StatusBadge>
-                        ))}
-                      </div>
-                    </div>
-                    <div className="shrink-0 text-right">
-                      <p className="text-sm font-medium tabular-nums">{role.users} users</p>
-                      <Button variant="ghost" size="sm" className="mt-1" onClick={() => openEditRole(role)}>Edit</Button>
-                    </div>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </Section>
-
-          <Section title="Platform users" description="Internal LexaRox staff with platform access">
-            <ul className="divide-y">
-              {users.map((user) => (
-                <li key={user.id} className="flex items-center justify-between gap-3 px-4 py-3.5 sm:px-5">
-                  <div className="flex min-w-0 items-center gap-3">
-                    <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[#3cadf1]/15 text-xs font-bold text-[#3cadf1]">
-                      {user.name
-                        .split(" ")
-                        .map((part) => part[0])
-                        .join("")
-                        .slice(0, 2)
-                        .toUpperCase()}
-                    </span>
-                    <div className="min-w-0">
-                      <p className="truncate text-sm font-semibold">{user.name}</p>
-                      <p className="truncate text-xs text-muted-foreground">{user.email}</p>
-                    </div>
-                  </div>
-                  <div className="flex shrink-0 items-center gap-3">
-                    <StatusBadge tone="neutral">{roleName(user.roleId)}</StatusBadge>
-                    <StatusBadge tone={user.status === "Active" ? "success" : "warning"}>{user.status}</StatusBadge>
-                    <span className="hidden text-xs text-muted-foreground sm:inline">{user.added}</span>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </Section>
-        </TabsContent>
-
-        <TabsContent value="departments" className="mt-5">
-          <Section title="Department configuration" description="Default departments available to subscriber firms">
-            <ul className="divide-y">
-              {platformDepartments.map((dept) => (
-                <li key={dept.id} className="flex items-center justify-between gap-3 px-4 py-3.5 sm:px-5">
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-2">
-                      <Building2 className="h-4 w-4 text-[#3cadf1]" />
-                      <p className="font-semibold">{dept.name}</p>
-                      {dept.defaultForNewFirms && <StatusBadge tone="success">Default for new firms</StatusBadge>}
-                    </div>
-                    <p className="mt-0.5 text-sm text-muted-foreground">{dept.description}</p>
-                  </div>
-                  <span className="shrink-0 text-sm text-muted-foreground tabular-nums">{dept.firmsUsing} firms</span>
-                </li>
-              ))}
-            </ul>
-          </Section>
-        </TabsContent>
-
-        <TabsContent value="onboarding" className="mt-5">
-          <Section title="Client onboarding configuration" description="Platform-default onboarding steps for end clients">
-            <ul className="divide-y">
-              {onboardingSteps.map((step) => (
-                <li key={step.id} className="flex items-center justify-between gap-3 px-4 py-3.5 sm:px-5">
-                  <div className="flex items-center gap-3 min-w-0">
-                    <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-muted text-xs font-bold">{step.order}</span>
-                    <div>
-                      <p className="text-sm font-medium">{step.name}</p>
-                      {step.required && <span className="text-xs text-muted-foreground">Required step</span>}
-                    </div>
-                  </div>
-                  <Switch
-                    checked={step.enabled}
-                    onCheckedChange={(checked) => {
-                      setOnboardingSteps((prev) => prev.map((s) => (s.id === step.id ? { ...s, enabled: checked } : s)));
-                      toast.success(`${step.name} ${checked ? "enabled" : "disabled"}`);
-                    }}
-                  />
-                </li>
-              ))}
-            </ul>
+        <TabsContent value="roles" className="mt-5">
+          <Section title="Platform administrator" description="Signed-in Super Admin account">
+            <dl className="grid gap-4 p-4 sm:grid-cols-2 sm:px-5">
+              <div><dt className="text-xs uppercase tracking-wide text-muted-foreground">Name</dt><dd className="mt-1 text-sm font-semibold">{platformAdmin.name}</dd></div>
+              <div><dt className="text-xs uppercase tracking-wide text-muted-foreground">Email</dt><dd className="mt-1 text-sm">{platformAdmin.email}</dd></div>
+              <div>
+                <dt className="text-xs uppercase tracking-wide text-muted-foreground">Role</dt>
+                <dd className="mt-1">
+                  <StatusBadge tone="primary"><Lock className="mr-1 h-3 w-3" />{platformAdmin.role}</StatusBadge>
+                </dd>
+              </div>
+            </dl>
           </Section>
         </TabsContent>
 
@@ -397,69 +198,6 @@ function SettingsPage() {
       </Tabs>
 
       <FormDialog
-        open={roleDialogOpen}
-        onOpenChange={setRoleDialogOpen}
-        title="Edit platform role"
-        description="Define role name, description and module permissions."
-        saveLabel="Save changes"
-        onSave={saveRole}
-        size="lg"
-      >
-        <PlatformFormField label="Role name" htmlFor="role-name">
-          <Input id="role-name" value={roleForm.name} onChange={(e) => setRoleForm((f) => ({ ...f, name: e.target.value }))} placeholder="Platform Admin" />
-        </PlatformFormField>
-        <PlatformFormField label="Description" htmlFor="role-desc">
-          <Textarea id="role-desc" rows={2} value={roleForm.description} onChange={(e) => setRoleForm((f) => ({ ...f, description: e.target.value }))} />
-        </PlatformFormField>
-        <PlatformFormField label="Permissions" htmlFor="role-perms" hint="Comma-separated module names">
-          <Input id="role-perms" value={roleForm.permissions} onChange={(e) => setRoleForm((f) => ({ ...f, permissions: e.target.value }))} placeholder="Firms, Subscriptions, Inquiries" />
-        </PlatformFormField>
-      </FormDialog>
-
-      <FormDialog
-        open={userDialogOpen}
-        onOpenChange={setUserDialogOpen}
-        title="Add platform user"
-        description="Create a new LexaRox internal account and assign a platform role."
-        saveLabel="Create user"
-        onSave={saveUser}
-        size="lg"
-      >
-        <div className="grid gap-4 sm:grid-cols-2">
-          <PlatformFormField label="Full name" htmlFor="user-name" className="sm:col-span-2">
-            <Input
-              id="user-name"
-              value={userForm.name}
-              onChange={(e) => setUserForm((f) => ({ ...f, name: e.target.value }))}
-              placeholder="Alex Morgan"
-            />
-          </PlatformFormField>
-          <PlatformFormField label="Work email" htmlFor="user-email" className="sm:col-span-2">
-            <Input
-              id="user-email"
-              type="email"
-              value={userForm.email}
-              onChange={(e) => setUserForm((f) => ({ ...f, email: e.target.value }))}
-              placeholder="alex.morgan@lexarox.com"
-            />
-          </PlatformFormField>
-          <PlatformFormField label="Platform role" htmlFor="user-role" className="sm:col-span-2">
-            <Select value={userForm.roleId} onValueChange={(v) => setUserForm((f) => ({ ...f, roleId: v }))}>
-              <SelectTrigger id="user-role"><SelectValue /></SelectTrigger>
-              <SelectContent>
-                {roles.map((role) => (
-                  <SelectItem key={role.id} value={role.id}>{role.name}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </PlatformFormField>
-        </div>
-        <p className="text-xs text-muted-foreground">
-          An invitation email will be sent so the user can set their password and access the platform.
-        </p>
-      </FormDialog>
-
-      <FormDialog
         open={connectDialogOpen}
         onOpenChange={setConnectDialogOpen}
         title={connectingIntegration ? `Connect ${connectingIntegration.name}` : "Connect integration"}
@@ -471,19 +209,6 @@ function SettingsPage() {
           <Input id="int-key" type="password" value={apiKey} onChange={(e) => setApiKey(e.target.value)} placeholder="Enter API key" />
         </PlatformFormField>
       </FormDialog>
-
-      <Section title="Platform administrator" description="Signed-in Super Admin account" className="mt-5">
-        <dl className="grid gap-4 p-4 sm:grid-cols-2 sm:px-5">
-          <div><dt className="text-xs uppercase tracking-wide text-muted-foreground">Name</dt><dd className="mt-1 text-sm font-semibold">{platformAdmin.name}</dd></div>
-          <div><dt className="text-xs uppercase tracking-wide text-muted-foreground">Email</dt><dd className="mt-1 text-sm">{platformAdmin.email}</dd></div>
-          <div>
-            <dt className="text-xs uppercase tracking-wide text-muted-foreground">Role</dt>
-            <dd className="mt-1">
-              <StatusBadge tone="primary"><Lock className="mr-1 h-3 w-3" />{platformAdmin.role}</StatusBadge>
-            </dd>
-          </div>
-        </dl>
-      </Section>
     </AppShell>
   );
 }
