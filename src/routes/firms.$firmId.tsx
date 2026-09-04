@@ -10,6 +10,7 @@ import {
   Calendar,
   ExternalLink,
   ScrollText,
+  Download,
 } from "lucide-react";
 import { AppShell, PageHeader } from "@/components/app-shell";
 import { FormDialog } from "@/components/form-dialog";
@@ -35,6 +36,7 @@ import {
   auditLogs,
   type SubscriberFirm,
 } from "@/lib/platform-data";
+import { downloadCsv } from "@/lib/export-csv";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 
@@ -63,13 +65,19 @@ function FirmDetailPage() {
   const [assignedTemplates, setAssignedTemplates] = useState(firm.assignedTemplates);
   const [planDialogOpen, setPlanDialogOpen] = useState(false);
   const [notifyDialogOpen, setNotifyDialogOpen] = useState(false);
-  const [auditDialogOpen, setAuditDialogOpen] = useState(false);
   const [impersonateDialogOpen, setImpersonateDialogOpen] = useState(false);
   const [selectedPlanId, setSelectedPlanId] = useState(firm.planId);
   const [notifySubject, setNotifySubject] = useState("");
   const [notifyMessage, setNotifyMessage] = useState("");
 
-  const firmAuditLogs = auditLogs.filter((log) => log.target.toLowerCase().includes(firm.name.toLowerCase()));
+  const exportAuditLog = () => {
+    downloadCsv(
+      "lexarox-platform-audit-log.csv",
+      ["ID", "Action", "Actor", "Target", "Timestamp", "IP"],
+      auditLogs.map((log) => [log.id, log.action, log.actor, log.target, log.timestamp, log.ip]),
+    );
+    toast.success("Audit log exported");
+  };
 
   const toggleService = (id: string) => {
     setEnabledServices((prev) => (prev.includes(id) ? prev.filter((s) => s !== id) : [...prev, id]));
@@ -132,7 +140,7 @@ function FirmDetailPage() {
     },
     {
       label: "View firm audit log",
-      action: () => setAuditDialogOpen(true),
+      action: () => setActiveTab("audit"),
     },
   ];
 
@@ -170,6 +178,7 @@ function FirmDetailPage() {
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="subscription">Subscription</TabsTrigger>
           <TabsTrigger value="configuration">Configuration</TabsTrigger>
+          <TabsTrigger value="audit">Audit Logs</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="mt-5 space-y-5">
@@ -281,6 +290,35 @@ function FirmDetailPage() {
             <Button size="sm" variant="outline" asChild><Link to="/templates">Manage global templates</Link></Button>
           </div>
         </TabsContent>
+
+        <TabsContent value="audit" className="mt-5">
+          <Section title="Consolidated audit logs" description="Platform-wide administrative actions">
+            <ul className="divide-y">
+              {auditLogs.map((log) => (
+                <li key={log.id} className="px-4 py-3.5 sm:px-5">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium">
+                        <ScrollText className="mr-1.5 inline h-3.5 w-3.5 text-muted-foreground" />
+                        {log.action}
+                      </p>
+                      <p className="text-xs text-muted-foreground">{log.actor} · {log.target}</p>
+                    </div>
+                    <div className="shrink-0 text-right text-xs text-muted-foreground">
+                      <p>{log.timestamp}</p>
+                      <p className="font-mono">{log.ip}</p>
+                    </div>
+                  </div>
+                </li>
+              ))}
+            </ul>
+            <div className="border-t px-4 py-3 sm:px-5">
+              <Button size="sm" variant="outline" onClick={exportAuditLog}>
+                <Download className="h-4 w-4" /> Export full audit log
+              </Button>
+            </div>
+          </Section>
+        </TabsContent>
       </Tabs>
 
       <FormDialog
@@ -318,32 +356,6 @@ function FirmDetailPage() {
         <PlatformFormField label="Message" htmlFor="notify-message">
           <Textarea id="notify-message" rows={5} value={notifyMessage} onChange={(e) => setNotifyMessage(e.target.value)} placeholder="Write your message to the firm administrator…" />
         </PlatformFormField>
-      </FormDialog>
-
-      <FormDialog
-        open={auditDialogOpen}
-        onOpenChange={setAuditDialogOpen}
-        title={`Audit log — ${firm.name}`}
-        description="Recent platform actions affecting this firm."
-        saveLabel="Close"
-        cancelLabel="Dismiss"
-        onSave={() => true}
-      >
-        {firmAuditLogs.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No audit entries found for this firm.</p>
-        ) : (
-          <ul className="divide-y rounded-lg border">
-            {firmAuditLogs.map((log) => (
-              <li key={log.id} className="px-4 py-3">
-                <p className="text-sm font-medium">
-                  <ScrollText className="mr-1.5 inline h-3.5 w-3.5 text-muted-foreground" />
-                  {log.action}
-                </p>
-                <p className="mt-0.5 text-xs text-muted-foreground">{log.actor} · {log.timestamp}</p>
-              </li>
-            ))}
-          </ul>
-        )}
       </FormDialog>
 
       <FormDialog

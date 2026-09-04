@@ -676,3 +676,30 @@ export const auditLogs: AuditLogEntry[] = [
   { id: "log-4", action: "Content updated", actor: "Sarah Chen", target: "Terms of Service", timestamp: "15 Aug 2026, 16:30", ip: "81.2.xxx.xxx" },
   { id: "log-5", action: "New firm onboarded", actor: "Sarah Chen", target: "Harper & Lane LLP", timestamp: "2 Sep 2026, 08:45", ip: "81.2.xxx.xxx" },
 ];
+
+export type PlatformNotificationCategory = "Firm" | "Billing" | "Inquiry" | "System" | "Subscription";
+
+export type PlatformNotification = {
+  id: string;
+  category: PlatformNotificationCategory;
+  title: string;
+  message: string;
+  received: string;
+  read: boolean;
+  firmName?: string;
+};
+
+export const platformNotifications: PlatformNotification[] = [
+  { id: "ntf-1", category: "Firm", title: "Harper & Lane LLP onboarded", message: "Premium plan · 8 staff seats · London", received: "12 min ago", read: false, firmName: "Harper & Lane LLP" },
+  { id: "ntf-2", category: "Billing", title: "Northgate Partners — payment failed", message: "Card expired · grace period started · action required", received: "1 hr ago", read: false, firmName: "Northgate Partners LLP" },
+  { id: "ntf-3", category: "Inquiry", title: "New sales inquiry — MTD Early Bird", message: "Greenfield Accountancy · 12 staff · demo requested", received: "2 hrs ago", read: false, firmName: "Greenfield Accountancy" },
+  { id: "ntf-4", category: "Billing", title: "Whitfield & Partners renewed Premium", message: "£249/mo · auto-renewal confirmed for Sep 2026", received: "3 hrs ago", read: true, firmName: "Whitfield & Partners Accountancy Ltd" },
+  { id: "ntf-5", category: "System", title: "Global proposal template updated", message: "Limited Company — Full Compliance Pack v3 published platform-wide", received: "4 hrs ago", read: true },
+  { id: "ntf-6", category: "Subscription", title: "Summit Advisors approaching seat limit", message: "22 of 25 seats used · consider Top Level upgrade", received: "Yesterday", read: false, firmName: "Summit Financial Advisors Ltd" },
+  { id: "ntf-7", category: "Firm", title: "Greenfield Accountancy trial ending soon", message: "MTD Early Bird trial expires in 5 days", received: "Yesterday", read: true, firmName: "Greenfield Accountancy" },
+  { id: "ntf-8", category: "Inquiry", title: "Support inquiry — payment failure", message: "Emma Northgate · urgent account suspension follow-up", received: "Yesterday", read: false, firmName: "Northgate Partners LLP" },
+  { id: "ntf-9", category: "Billing", title: "Coastal Tax Solutions invoice paid", message: "£149 MTD plan · Sep 2026 billing cycle", received: "2 days ago", read: true, firmName: "Coastal Tax Solutions" },
+  { id: "ntf-10", category: "System", title: "Weekly platform summary ready", message: "MRR, firm count and activity digest for Super Admins", received: "3 days ago", read: true },
+  { id: "ntf-11", category: "Subscription", title: "New plan draft created", message: "Lexarox Enterprise — awaiting review before publish", received: "4 days ago", read: true },
+  { id: "ntf-12", category: "Firm", title: "Northgate Partners suspended", message: "Payment failure · client access restricted", received: "5 days ago", read: true, firmName: "Northgate Partners LLP" },
+];

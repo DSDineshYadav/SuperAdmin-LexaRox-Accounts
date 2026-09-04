@@ -7,6 +7,7 @@ import {
   FileText,
   Mail,
   MessageSquare,
+  Bell,
   Settings,
   Users,
 } from "lucide-react";
@@ -26,6 +27,7 @@ import {
 } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
 import { platformAdmin } from "@/lib/platform-data";
+import { showSubadminManagement, showSystemAdministration } from "@/lib/platform-navigation";
 
 const platform = [
   { title: "Platform Dashboard", url: "/dashboard", icon: LayoutDashboard },
@@ -43,10 +45,26 @@ const billing = [
   { title: "Static Content Management", url: "/content", icon: FileText },
 ] as const;
 
+const notifications = [
+  { title: "Notifications", url: "/notifications", icon: Bell },
+] as const;
+
+function getAdministrationNavItems() {
+  const items: { title: string; url: string; icon: React.ElementType }[] = [];
+  if (showSubadminManagement) {
+    items.push({ title: "Subadmin Management", url: "/subadmin-management", icon: Users });
+  }
+  if (showSystemAdministration) {
+    items.push({ title: "System Administration", url: "/settings", icon: Settings });
+  }
+  return items;
+}
+
 export function AppSidebar() {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
   const pathname = useRouterState({ select: (r) => r.location.pathname });
+  const administrationItems = getAdministrationNavItems();
 
   const isActive = (url: string) => {
     if (url === "/dashboard") return pathname === "/dashboard";
@@ -116,35 +134,31 @@ export function AppSidebar() {
         {renderGroup("Platform", platform)}
         {renderGroup("Catalogue", catalogue)}
         {renderGroup("Billing & Content", billing)}
-        {renderGroup("Administration", [
-          { title: "Subadmin Management", url: "/subadmin-management", icon: Users },
-          { title: "System Administration", url: "/settings", icon: Settings },
-        ])}
+        {administrationItems.length > 0 && renderGroup("Administration", administrationItems)}
+        {renderGroup("Notifications", notifications)}
       </SidebarContent>
 
       <SidebarFooter className={cn("gap-1 border-t border-[#3d3949]", collapsed ? "px-0 py-2" : "p-2")}>
         <SidebarMenu className={cn(collapsed && "items-center")}>
           <SidebarMenuItem className={cn(collapsed && "flex justify-center")}>
-            <SidebarMenuButton asChild tooltip="Super Admin / Account Settings">
-              <Link
-                to="/settings"
-                className={cn(
-                  "flex h-auto items-center text-white transition-all",
-                  collapsed
-                    ? "size-8 justify-center p-0 border-0 bg-transparent hover:bg-transparent"
-                    : "gap-3 rounded-lg border border-white/10 bg-white/5 p-2 hover:bg-white/10",
-                )}
-              >
-                <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-[#3cadf1] text-xs font-bold text-white">
-                  {platformAdmin.initials}
+            <SidebarMenuButton
+              tooltip={`${platformAdmin.name} · ${platformAdmin.role}`}
+              className={cn(
+                "flex h-auto items-center text-white transition-all",
+                collapsed
+                  ? "size-8 justify-center p-0 border-0 bg-transparent hover:bg-transparent"
+                  : "gap-3 rounded-lg border border-white/10 bg-white/5 p-2 hover:bg-transparent",
+              )}
+            >
+              <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-[#3cadf1] text-xs font-bold text-white">
+                {platformAdmin.initials}
+              </span>
+              {!collapsed && (
+                <span className="flex min-w-0 flex-col">
+                  <span className="truncate text-sm font-bold text-white">{platformAdmin.name}</span>
+                  <span className="truncate text-xs font-medium text-white/70">{platformAdmin.role}</span>
                 </span>
-                {!collapsed && (
-                  <span className="flex min-w-0 flex-col">
-                    <span className="truncate text-sm font-bold text-white">{platformAdmin.name}</span>
-                    <span className="truncate text-xs font-medium text-white/70">{platformAdmin.role} · Settings</span>
-                  </span>
-                )}
-              </Link>
+              )}
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>

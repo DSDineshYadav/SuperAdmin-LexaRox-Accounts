@@ -4,6 +4,7 @@ import { Bell, Search, Sparkles } from "lucide-react";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 import { CHATBOT_SAFE_BOTTOM, ChatbotProvider, useAppChatbot } from "@/components/app-chatbot";
+import { showSystemAdministration } from "@/lib/platform-navigation";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -87,10 +88,14 @@ function AppShellLayout({ children }: { children: ReactNode }) {
                     <span className="text-xs font-normal text-muted-foreground">Super Admin</span>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem asChild>
-                    <Link to="/settings">Account settings</Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
+                  {showSystemAdministration && (
+                    <>
+                      <DropdownMenuItem asChild>
+                        <Link to="/settings">Account settings</Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                    </>
+                  )}
                   <DropdownMenuItem asChild>
                     <Link to="/login">Sign out</Link>
                   </DropdownMenuItem>

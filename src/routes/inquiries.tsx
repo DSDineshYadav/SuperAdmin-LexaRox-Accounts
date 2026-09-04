@@ -1,14 +1,11 @@
 import { useMemo, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import { MessageSquare, Plus, Search, AlertCircle, Clock, CheckCircle2 } from "lucide-react";
+import { MessageSquare, Search, AlertCircle, Clock, CheckCircle2 } from "lucide-react";
 import { AppShell, PageHeader } from "@/components/app-shell";
-import { FormDialog } from "@/components/form-dialog";
-import { PlatformFormField } from "@/components/platform-form-field";
 import { EmptyState, KpiCard, ListTableCard, ListTablePagination, ListTablePrimaryCell, PriorityBadge, Section, StatusBadge, toneForStatus } from "@/components/kit";
 import { usePagination } from "@/hooks/use-pagination";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -47,34 +44,12 @@ export const Route = createFileRoute("/inquiries")({
   component: InquiryManagementPage,
 });
 
-type InquiryForm = {
-  type: PlatformInquiry["type"];
-  subject: string;
-  contactName: string;
-  contactEmail: string;
-  firmName: string;
-  priority: PlatformInquiry["priority"];
-  message: string;
-};
-
-const emptyInquiryForm: InquiryForm = {
-  type: "Sales",
-  subject: "",
-  contactName: "",
-  contactEmail: "",
-  firmName: "",
-  priority: "Medium",
-  message: "",
-};
-
 function InquiryManagementPage() {
   const [inquiries, setInquiries] = useState(platformInquiries);
   const [query, setQuery] = useState("");
   const [type, setType] = useState("all");
   const [status, setStatus] = useState("all");
   const [selected, setSelected] = useState<PlatformInquiry | null>(null);
-  const [logDialogOpen, setLogDialogOpen] = useState(false);
-  const [inquiryForm, setInquiryForm] = useState<InquiryForm>(emptyInquiryForm);
 
   const openCount = inquiries.filter((i) => i.status === "New" || i.status === "In Progress").length;
   const urgentCount = inquiries.filter((i) => i.priority === "Urgent").length;
@@ -100,29 +75,6 @@ function InquiryManagementPage() {
     setSelected((prev) => (prev?.id === id ? { ...prev, ...patch } : prev));
   };
 
-  const logInquiry = (): boolean => {
-    if (!inquiryForm.subject.trim() || !inquiryForm.contactName.trim() || !inquiryForm.contactEmail.trim()) {
-      toast.error("Subject, contact name and email are required");
-      return false;
-    }
-    const newInquiry: PlatformInquiry = {
-      id: `INQ-${1043 + inquiries.length}`,
-      type: inquiryForm.type,
-      subject: inquiryForm.subject.trim(),
-      contactName: inquiryForm.contactName.trim(),
-      contactEmail: inquiryForm.contactEmail.trim(),
-      firmName: inquiryForm.firmName.trim() || undefined,
-      status: "New",
-      priority: inquiryForm.priority,
-      received: new Date().toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }),
-      message: inquiryForm.message.trim() || "No additional message provided.",
-    };
-    setInquiries((prev) => [newInquiry, ...prev]);
-    toast.success("Inquiry logged");
-    setInquiryForm(emptyInquiryForm);
-    return true;
-  };
-
   const assignInquiry = () => {
     if (!selected) return;
     updateInquiry(selected.id, { status: "In Progress", assignedTo: platformAdmin.name });
@@ -140,11 +92,6 @@ function InquiryManagementPage() {
       <PageHeader
         title="Inquiry Management"
         subtitle="Manage inbound platform-level inquiries — sales demos, support requests and partnership enquiries."
-        actions={
-          <Button variant="outline" onClick={() => { setInquiryForm(emptyInquiryForm); setLogDialogOpen(true); }}>
-            <Plus className="h-4 w-4" /> Log inquiry
-          </Button>
-        }
       />
 
       <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -228,55 +175,6 @@ function InquiryManagementPage() {
           </>
         )}
       </ListTableCard>
-
-      <FormDialog
-        open={logDialogOpen}
-        onOpenChange={setLogDialogOpen}
-        title="Log inquiry"
-        description="Manually record an inbound sales, support or partnership enquiry."
-        saveLabel="Log inquiry"
-        onSave={logInquiry}
-        size="lg"
-      >
-        <div className="grid gap-4 sm:grid-cols-2">
-          <PlatformFormField label="Type" htmlFor="inq-type">
-            <Select value={inquiryForm.type} onValueChange={(v) => setInquiryForm((f) => ({ ...f, type: v as InquiryForm["type"] }))}>
-              <SelectTrigger id="inq-type"><SelectValue /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Sales">Sales</SelectItem>
-                <SelectItem value="Support">Support</SelectItem>
-                <SelectItem value="Partnership">Partnership</SelectItem>
-              </SelectContent>
-            </Select>
-          </PlatformFormField>
-          <PlatformFormField label="Priority" htmlFor="inq-priority">
-            <Select value={inquiryForm.priority} onValueChange={(v) => setInquiryForm((f) => ({ ...f, priority: v as InquiryForm["priority"] }))}>
-              <SelectTrigger id="inq-priority"><SelectValue /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Low">Low</SelectItem>
-                <SelectItem value="Medium">Medium</SelectItem>
-                <SelectItem value="High">High</SelectItem>
-                <SelectItem value="Urgent">Urgent</SelectItem>
-              </SelectContent>
-            </Select>
-          </PlatformFormField>
-          <PlatformFormField label="Subject" htmlFor="inq-subject" className="sm:col-span-2">
-            <Input id="inq-subject" value={inquiryForm.subject} onChange={(e) => setInquiryForm((f) => ({ ...f, subject: e.target.value }))} placeholder="Enterprise plan enquiry" />
-          </PlatformFormField>
-          <PlatformFormField label="Contact name" htmlFor="inq-name">
-            <Input id="inq-name" value={inquiryForm.contactName} onChange={(e) => setInquiryForm((f) => ({ ...f, contactName: e.target.value }))} />
-          </PlatformFormField>
-          <PlatformFormField label="Contact email" htmlFor="inq-email">
-            <Input id="inq-email" type="email" value={inquiryForm.contactEmail} onChange={(e) => setInquiryForm((f) => ({ ...f, contactEmail: e.target.value }))} />
-          </PlatformFormField>
-          <PlatformFormField label="Firm name (optional)" htmlFor="inq-firm" className="sm:col-span-2">
-            <Input id="inq-firm" value={inquiryForm.firmName} onChange={(e) => setInquiryForm((f) => ({ ...f, firmName: e.target.value }))} />
-          </PlatformFormField>
-          <PlatformFormField label="Message" htmlFor="inq-message" className="sm:col-span-2">
-            <Textarea id="inq-message" rows={4} value={inquiryForm.message} onChange={(e) => setInquiryForm((f) => ({ ...f, message: e.target.value }))} />
-          </PlatformFormField>
-        </div>
-      </FormDialog>
 
       <Sheet open={!!selected} onOpenChange={(open) => !open && setSelected(null)}>
         <SheetContent className="w-full sm:max-w-lg">

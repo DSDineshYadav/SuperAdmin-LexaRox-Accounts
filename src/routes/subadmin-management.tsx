@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 import { KeyRound, Search, Shield, Sparkles, Trash2, UserPlus, Users } from "lucide-react";
 import { AppShell, PageHeader } from "@/components/app-shell";
 import { FormDialog } from "@/components/form-dialog";
@@ -38,9 +38,15 @@ import {
   getPlatformUsers,
   updatePlatformUser,
 } from "@/lib/platform-users-store";
+import { showSubadminManagement } from "@/lib/platform-navigation";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/subadmin-management")({
+  beforeLoad: () => {
+    if (!showSubadminManagement) {
+      throw redirect({ to: "/dashboard" });
+    }
+  },
   head: () => ({
     meta: [
       { title: "Subadmin Management — LexaRox Platform" },

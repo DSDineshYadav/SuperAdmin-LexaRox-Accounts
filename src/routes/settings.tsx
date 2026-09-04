@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 import { Shield, Users, Plug, Bell, ScrollText, Lock, Download } from "lucide-react";
 import { AppShell, PageHeader } from "@/components/app-shell";
 import { FormDialog } from "@/components/form-dialog";
@@ -18,9 +18,15 @@ import {
 } from "@/lib/platform-data";
 import { getPlatformUsers } from "@/lib/platform-users-store";
 import { downloadCsv } from "@/lib/export-csv";
+import { showSystemAdministration } from "@/lib/platform-navigation";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/settings")({
+  beforeLoad: () => {
+    if (!showSystemAdministration) {
+      throw redirect({ to: "/dashboard" });
+    }
+  },
   head: () => ({
     meta: [
       { title: "System Administration — LexaRox Platform" },

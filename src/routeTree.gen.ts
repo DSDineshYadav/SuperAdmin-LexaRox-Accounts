@@ -19,6 +19,7 @@ import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as InquiriesRouteImport } from './routes/inquiries'
 import { Route as InsightsRouteImport } from './routes/insights'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as NotificationsRouteImport } from './routes/notifications'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as OversightRouteImport } from './routes/oversight'
 import { Route as ProposalsRouteImport } from './routes/proposals'
@@ -94,6 +95,11 @@ const InsightsRoute = InsightsRouteImport.update({
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NotificationsRoute = NotificationsRouteImport.update({
+  id: '/notifications',
+  path: '/notifications',
   getParentRoute: () => rootRouteImport,
 } as any)
 const OnboardingRoute = OnboardingRouteImport.update({
@@ -239,6 +245,7 @@ export interface FileRoutesByFullPath {
   '/inquiries': typeof InquiriesRoute
   '/insights': typeof InsightsRoute
   '/login': typeof LoginRoute
+  '/notifications': typeof NotificationsRoute
   '/onboarding': typeof OnboardingRoute
   '/oversight': typeof OversightRoute
   '/proposals': typeof ProposalsRouteWithChildren
@@ -277,6 +284,7 @@ export interface FileRoutesByTo {
   '/inquiries': typeof InquiriesRoute
   '/insights': typeof InsightsRoute
   '/login': typeof LoginRoute
+  '/notifications': typeof NotificationsRoute
   '/onboarding': typeof OnboardingRoute
   '/oversight': typeof OversightRoute
   '/proposals': typeof ProposalsRouteWithChildren
@@ -316,6 +324,7 @@ export interface FileRoutesById {
   '/inquiries': typeof InquiriesRoute
   '/insights': typeof InsightsRoute
   '/login': typeof LoginRoute
+  '/notifications': typeof NotificationsRoute
   '/onboarding': typeof OnboardingRoute
   '/oversight': typeof OversightRoute
   '/proposals': typeof ProposalsRouteWithChildren
@@ -356,6 +365,7 @@ export interface FileRouteTypes {
     | '/inquiries'
     | '/insights'
     | '/login'
+    | '/notifications'
     | '/onboarding'
     | '/oversight'
     | '/proposals'
@@ -394,6 +404,7 @@ export interface FileRouteTypes {
     | '/inquiries'
     | '/insights'
     | '/login'
+    | '/notifications'
     | '/onboarding'
     | '/oversight'
     | '/proposals'
@@ -432,6 +443,7 @@ export interface FileRouteTypes {
     | '/inquiries'
     | '/insights'
     | '/login'
+    | '/notifications'
     | '/onboarding'
     | '/oversight'
     | '/proposals'
@@ -471,6 +483,7 @@ export interface RootRouteChildren {
   InquiriesRoute: typeof InquiriesRoute
   InsightsRoute: typeof InsightsRoute
   LoginRoute: typeof LoginRoute
+  NotificationsRoute: typeof NotificationsRoute
   OnboardingRoute: typeof OnboardingRoute
   OversightRoute: typeof OversightRoute
   ProposalsRoute: typeof ProposalsRouteWithChildren
@@ -567,6 +580,13 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/notifications': {
+      id: '/notifications'
+      path: '/notifications'
+      fullPath: '/notifications'
+      preLoaderRoute: typeof NotificationsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/onboarding': {
@@ -787,6 +807,7 @@ const rootRouteChildren: RootRouteChildren = {
   InquiriesRoute: InquiriesRoute,
   InsightsRoute: InsightsRoute,
   LoginRoute: LoginRoute,
+  NotificationsRoute: NotificationsRoute,
   OnboardingRoute: OnboardingRoute,
   OversightRoute: OversightRoute,
   ProposalsRoute: ProposalsRouteWithChildren,
